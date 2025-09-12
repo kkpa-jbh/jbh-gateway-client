@@ -13,11 +13,11 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class HttpClientFactoryTest {
 
-    private HttpClientFactory factory;
+    private JbhHttpClientFactory factory;
 
     @BeforeEach
     void setUp() {
-        factory = HttpClientFactory.createDefault();
+        factory = JbhHttpClientFactory.createDefault();
     }
 
     @AfterEach
@@ -29,7 +29,7 @@ class HttpClientFactoryTest {
 
     @Test
     void shouldCreateNativeAdapter() {
-        HttpClientAdapter adapter = factory.createAdapter("native");
+        JbhHttpClientAdapter adapter = factory.createAdapter("native");
         
         assertNotNull(adapter);
         assertEquals("native", adapter.getAdapterName());
@@ -45,7 +45,7 @@ class HttpClientFactoryTest {
                 .enableHttp2(false)
                 .build();
         
-        HttpClientAdapter adapter = factory.createAdapter("native", config);
+        JbhHttpClientAdapter adapter = factory.createAdapter("native", config);
         
         assertNotNull(adapter);
         assertEquals("native", adapter.getAdapterName());
@@ -55,8 +55,8 @@ class HttpClientFactoryTest {
 
     @Test
     void shouldCacheAdapters() {
-        HttpClientAdapter adapter1 = factory.getOrCreateAdapter("native");
-        HttpClientAdapter adapter2 = factory.getOrCreateAdapter("native");
+        JbhHttpClientAdapter adapter1 = factory.getOrCreateAdapter("native");
+        JbhHttpClientAdapter adapter2 = factory.getOrCreateAdapter("native");
         
         // Should return the same cached instance
         assertSame(adapter1, adapter2);
@@ -67,8 +67,8 @@ class HttpClientFactoryTest {
         HttpClientConfig config1 = HttpClientConfig.builder().connectTimeout(java.time.Duration.ofSeconds(5)).build();
         HttpClientConfig config2 = HttpClientConfig.builder().connectTimeout(java.time.Duration.ofSeconds(10)).build();
         
-        HttpClientAdapter adapter1 = factory.getOrCreateAdapter("native", config1);
-        HttpClientAdapter adapter2 = factory.getOrCreateAdapter("native", config2);
+        JbhHttpClientAdapter adapter1 = factory.getOrCreateAdapter("native", config1);
+        JbhHttpClientAdapter adapter2 = factory.getOrCreateAdapter("native", config2);
         
         // Should create different instances for different configs
         assertNotSame(adapter1, adapter2);
@@ -80,7 +80,7 @@ class HttpClientFactoryTest {
         
         assertTrue(factory.getSupportedAdapterTypes().contains("mock"));
         
-        HttpClientAdapter adapter = factory.createAdapter("mock");
+        JbhHttpClientAdapter adapter = factory.createAdapter("mock");
         assertEquals("mock", adapter.getAdapterName());
         
         adapter.close();
@@ -95,7 +95,7 @@ class HttpClientFactoryTest {
     @Test
     void shouldEvictFromCache() {
         HttpClientConfig config = HttpClientConfig.defaultConfig();
-        HttpClientAdapter adapter = factory.getOrCreateAdapter("native", config);
+        JbhHttpClientAdapter adapter = factory.getOrCreateAdapter("native", config);
         
         assertNotNull(adapter);
         
@@ -103,7 +103,7 @@ class HttpClientFactoryTest {
         factory.evictFromCache("native", config);
         
         // Should create a new instance
-        HttpClientAdapter newAdapter = factory.getOrCreateAdapter("native", config);
+        JbhHttpClientAdapter newAdapter = factory.getOrCreateAdapter("native", config);
         assertNotSame(adapter, newAdapter);
         
         newAdapter.close();

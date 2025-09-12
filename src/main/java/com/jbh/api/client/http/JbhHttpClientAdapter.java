@@ -1,8 +1,8 @@
 package com.jbh.api.client.http;
 
 import com.jbh.api.client.http.exception.HttpClientException;
-import com.jbh.api.client.http.model.HttpRequest;
-import com.jbh.api.client.http.model.HttpResponse;
+import com.jbh.api.client.http.model.JbhHttpRequest;
+import com.jbh.api.client.http.model.JbhHttpResponse;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -14,7 +14,7 @@ import java.util.concurrent.CompletableFuture;
  * This interface allows the gateway client to be agnostic of the underlying
  * HTTP client implementation (Native Java HTTP Client, OkHttp, etc.).
  */
-public interface HttpClientAdapter extends AutoCloseable {
+public interface JbhHttpClientAdapter extends AutoCloseable {
 
     /**
      * Execute an HTTP request synchronously.
@@ -23,7 +23,7 @@ public interface HttpClientAdapter extends AutoCloseable {
      * @return the HTTP response
      * @throws HttpClientException for any HTTP client related errors
      */
-    HttpResponse execute(HttpRequest request);
+    JbhHttpResponse execute(JbhHttpRequest request);
 
     /**
      * Execute an HTTP request asynchronously.
@@ -31,7 +31,7 @@ public interface HttpClientAdapter extends AutoCloseable {
      * @param request the HTTP request to execute
      * @return a CompletableFuture that will complete with the HTTP response
      */
-    CompletableFuture<HttpResponse> executeAsync(HttpRequest request);
+    CompletableFuture<JbhHttpResponse> executeAsync(JbhHttpRequest request);
 
     /**
      * Get the name/type of this HTTP client adapter.

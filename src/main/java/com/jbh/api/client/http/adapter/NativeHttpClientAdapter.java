@@ -2,11 +2,13 @@ package com.jbh.api.client.http.adapter;
 
 import com.jbh.api.client.config.HttpClientConfig;
 import com.jbh.api.client.config.RetryConfig;
-import com.jbh.api.client.http.HttpClientAdapter;
+import com.jbh.api.client.http.JbhHttpClientAdapter;
 import com.jbh.api.client.http.exception.HttpClientException;
 import com.jbh.api.client.http.exception.HttpConnectionException;
 import com.jbh.api.client.http.exception.HttpTimeoutException;
-import com.jbh.api.client.http.model.HttpHeaders;
+import com.jbh.api.client.http.model.JbhHttpHeaders;
+import com.jbh.api.client.http.model.JbhHttpRequest;
+import com.jbh.api.client.http.model.JbhHttpResponse;
 import com.jbh.gateway.client.http.exception.*;
 import com.jbh.gateway.client.http.model.*;
 import org.slf4j.Logger;
@@ -26,7 +28,7 @@ import java.util.concurrent.Executor;
  * Provides high-performance HTTP communication with full HTTP/2 support,
  * connection pooling, and comprehensive error handling.
  */
-public class NativeHttpClientAdapter implements HttpClientAdapter {
+public class NativeHttpClientAdapter implements JbhHttpClientAdapter {
 
     private static final Logger log = LoggerFactory.getLogger(NativeHttpClientAdapter.class);
 
@@ -48,8 +50,8 @@ public class NativeHttpClientAdapter implements HttpClientAdapter {
     }
 
     @Override
-    public com.jbh.api.client.http.model.HttpResponse execute(
-            com.jbh.api.client.http.model.HttpRequest request) {
+    public JbhHttpResponse execute(
+            JbhHttpRequest request) {
         
         log.debug("Executing synchronous request: {} {}", request.getMethod(), request.getUri());
         
@@ -61,8 +63,8 @@ public class NativeHttpClientAdapter implements HttpClientAdapter {
     }
 
     @Override
-    public CompletableFuture<com.jbh.api.client.http.model.HttpResponse> executeAsync(
-            com.jbh.api.client.http.model.HttpRequest request) {
+    public CompletableFuture<JbhHttpResponse> executeAsync(
+            JbhHttpRequest request) {
         
         log.debug("Executing asynchronous request: {} {}", request.getMethod(), request.getUri());
         
@@ -122,8 +124,8 @@ public class NativeHttpClientAdapter implements HttpClientAdapter {
         return builder.build();
     }
 
-    private com.jbh.api.client.http.model.HttpResponse executeWithRetry(
-            com.jbh.api.client.http.model.HttpRequest request, RetryConfig retryConfig) {
+    private JbhHttpResponse executeWithRetry(
+            JbhHttpRequest request, RetryConfig retryConfig) {
         
         Exception lastException = null;
         
@@ -140,7 +142,7 @@ public class NativeHttpClientAdapter implements HttpClientAdapter {
                 HttpResponse<String> nativeResponse = httpClient.send(nativeRequest, 
                         HttpResponse.BodyHandlers.ofString());
                 
-                com.jbh.api.client.http.model.HttpResponse response = convertResponse(nativeResponse);
+                JbhHttpResponse response = convertResponse(nativeResponse);
                 
                 // Check if we should retry based on status code
                 if (attempt < retryConfig.getMaxAttempts() && 
@@ -173,14 +175,14 @@ public class NativeHttpClientAdapter implements HttpClientAdapter {
         throw mapException(lastException, request);
     }
 
-    private CompletableFuture<com.jbh.api.client.http.model.HttpResponse> executeAsyncWithRetry(
-            com.jbh.api.client.http.model.HttpRequest request, RetryConfig retryConfig) {
+    private CompletableFuture<JbhHttpResponse> executeAsyncWithRetry(
+            JbhHttpRequest request, RetryConfig retryConfig) {
         
         return executeAsyncWithRetryInternal(request, retryConfig, 1);
     }
 
-    private CompletableFuture<com.jbh.api.client.http.model.HttpResponse> executeAsyncWithRetryInternal(
-            com.jbh.api.client.http.model.HttpRequest request, RetryConfig retryConfig, int attempt) {
+    private CompletableFuture<JbhHttpResponse> executeAsyncWithRetryInternal(
+            JbhHttpRequest request, RetryConfig retryConfig, int attempt) {
         
         try {
             HttpRequest nativeRequest = convertRequest(request);
@@ -229,7 +231,7 @@ public class NativeHttpClientAdapter implements HttpClientAdapter {
         }
     }
 
-    private HttpRequest convertRequest(com.jbh.api.client.http.model.HttpRequest request) {
+    private HttpRequest convertRequest(JbhHttpRequest request) {
         HttpRequest.Builder builder = HttpRequest.newBuilder()
                 .uri(request.getUri())
                 .timeout(request.getTimeout());
@@ -257,19 +259,19 @@ public class NativeHttpClientAdapter implements HttpClientAdapter {
         return builder.build();
     }
 
-    private com.jbh.api.client.http.model.HttpResponse convertResponse(HttpResponse<String> nativeResponse) {
-        HttpHeaders.Builder headersBuilder = HttpHeaders.builder();
+    private JbhHttpResponse convertResponse(HttpResponse<String> nativeResponse) {
+        JbhHttpHeaders.Builder headersBuilder = JbhHttpHeaders.builder();
         nativeResponse.headers().map().forEach((name, values) -> 
                 values.forEach(value -> headersBuilder.add(name, value)));
 
-        return com.jbh.api.client.http.model.HttpResponse.of(
+        return JbhHttpResponse.of(
                 nativeResponse.statusCode(),
                 headersBuilder.build(),
                 nativeResponse.body()
         );
     }
 
-    private RuntimeException mapException(Throwable throwable, com.jbh.api.client.http.model.HttpRequest request) {
+    private RuntimeException mapException(Throwable throwable, JbhHttpRequest request) {
         if (throwable instanceof RuntimeException runtimeException) {
             return runtimeException;
         }

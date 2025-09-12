@@ -1,19 +1,18 @@
 package com.jbh.api.client;
 
 import com.jbh.api.client.config.HttpClientConfig;
-import com.jbh.api.client.http.HttpClientAdapter;
-import com.jbh.api.client.http.HttpClientFactory;
-import com.jbh.api.client.http.model.HttpHeaders;
-import com.jbh.api.client.http.model.HttpMethod;
-import com.jbh.api.client.http.model.HttpRequest;
-import com.jbh.api.client.http.model.HttpResponse;
+import com.jbh.api.client.http.JbhHttpClientAdapter;
+import com.jbh.api.client.http.JbhHttpClientFactory;
+import com.jbh.api.client.http.model.JbhHttpHeaders;
+import com.jbh.api.client.http.model.JbhHttpMethod;
+import com.jbh.api.client.http.model.JbhHttpRequest;
+import com.jbh.api.client.http.model.JbhHttpResponse;
 import com.jbh.api.client.http.exception.HttpClientException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.time.Duration;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
@@ -26,13 +25,13 @@ import java.util.concurrent.CompletableFuture;
  * It handles URL construction, header propagation, and integrates with the underlying
  * HTTP client adapters.
  */
-public class GatewayClient implements AutoCloseable {
+public class JbhGatewayClient implements AutoCloseable {
     
-    private static final Logger log = LoggerFactory.getLogger(GatewayClient.class);
+    private static final Logger log = LoggerFactory.getLogger(JbhGatewayClient.class);
     
     private final String baseUrl;
-    private final HttpClientAdapter httpClient;
-    private final HttpClientFactory httpClientFactory;
+    private final JbhHttpClientAdapter httpClient;
+    private final JbhHttpClientFactory httpClientFactory;
     private final Duration defaultTimeout;
     
     /**
@@ -43,9 +42,9 @@ public class GatewayClient implements AutoCloseable {
      * @param httpClientConfig the HTTP client configuration
      * @throws IllegalArgumentException if parameters are invalid
      */
-    public GatewayClient(String baseUrl, String httpClientType, HttpClientConfig httpClientConfig) {
+    public JbhGatewayClient(String baseUrl, String httpClientType, HttpClientConfig httpClientConfig) {
         this.baseUrl = validateAndNormalizeBaseUrl(baseUrl);
-        this.httpClientFactory = new HttpClientFactory(httpClientConfig);
+        this.httpClientFactory = new JbhHttpClientFactory(httpClientConfig);
         this.httpClient = httpClientFactory.createAdapter(httpClientType, httpClientConfig);
         this.defaultTimeout = httpClientConfig.getRequestTimeout();
         
@@ -57,7 +56,7 @@ public class GatewayClient implements AutoCloseable {
      * 
      * @param baseUrl the base URL of the gateway service
      */
-    public GatewayClient(String baseUrl) {
+    public JbhGatewayClient(String baseUrl) {
         this(baseUrl, "native", HttpClientConfig.defaultConfig());
     }
     
@@ -70,8 +69,8 @@ public class GatewayClient implements AutoCloseable {
      * @return the HTTP response
      * @throws HttpClientException if the request fails
      */
-    public HttpResponse get(String path) {
-        return get(path, HttpHeaders.empty());
+    public JbhHttpResponse get(String path) {
+        return get(path, JbhHttpHeaders.empty());
     }
     
     /**
@@ -82,7 +81,7 @@ public class GatewayClient implements AutoCloseable {
      * @return the HTTP response
      * @throws HttpClientException if the request fails
      */
-    public HttpResponse get(String path, HttpHeaders headers) {
+    public JbhHttpResponse get(String path, JbhHttpHeaders headers) {
         return get(path, headers, defaultTimeout);
     }
     
@@ -95,8 +94,8 @@ public class GatewayClient implements AutoCloseable {
      * @return the HTTP response
      * @throws HttpClientException if the request fails
      */
-    public HttpResponse get(String path, HttpHeaders headers, Duration timeout) {
-        HttpRequest request = HttpRequest.get(buildUrl(path))
+    public JbhHttpResponse get(String path, JbhHttpHeaders headers, Duration timeout) {
+        JbhHttpRequest request = JbhHttpRequest.get(buildUrl(path))
                 .headers(headers)
                 .timeout(timeout)
                 .build();
@@ -115,8 +114,8 @@ public class GatewayClient implements AutoCloseable {
      * @return the HTTP response
      * @throws HttpClientException if the request fails
      */
-    public HttpResponse post(String path, String jsonBody) {
-        return post(path, jsonBody, HttpHeaders.empty());
+    public JbhHttpResponse post(String path, String jsonBody) {
+        return post(path, jsonBody, JbhHttpHeaders.empty());
     }
     
     /**
@@ -128,7 +127,7 @@ public class GatewayClient implements AutoCloseable {
      * @return the HTTP response
      * @throws HttpClientException if the request fails
      */
-    public HttpResponse post(String path, String jsonBody, HttpHeaders headers) {
+    public JbhHttpResponse post(String path, String jsonBody, JbhHttpHeaders headers) {
         return post(path, jsonBody, headers, defaultTimeout);
     }
     
@@ -142,8 +141,8 @@ public class GatewayClient implements AutoCloseable {
      * @return the HTTP response
      * @throws HttpClientException if the request fails
      */
-    public HttpResponse post(String path, String jsonBody, HttpHeaders headers, Duration timeout) {
-        HttpRequest request = HttpRequest.post(buildUrl(path))
+    public JbhHttpResponse post(String path, String jsonBody, JbhHttpHeaders headers, Duration timeout) {
+        JbhHttpRequest request = JbhHttpRequest.post(buildUrl(path))
                 .jsonBody(jsonBody)
                 .headers(headers)
                 .timeout(timeout)
@@ -163,8 +162,8 @@ public class GatewayClient implements AutoCloseable {
      * @return the HTTP response
      * @throws HttpClientException if the request fails
      */
-    public HttpResponse put(String path, String jsonBody) {
-        return put(path, jsonBody, HttpHeaders.empty());
+    public JbhHttpResponse put(String path, String jsonBody) {
+        return put(path, jsonBody, JbhHttpHeaders.empty());
     }
     
     /**
@@ -176,7 +175,7 @@ public class GatewayClient implements AutoCloseable {
      * @return the HTTP response
      * @throws HttpClientException if the request fails
      */
-    public HttpResponse put(String path, String jsonBody, HttpHeaders headers) {
+    public JbhHttpResponse put(String path, String jsonBody, JbhHttpHeaders headers) {
         return put(path, jsonBody, headers, defaultTimeout);
     }
     
@@ -190,8 +189,8 @@ public class GatewayClient implements AutoCloseable {
      * @return the HTTP response
      * @throws HttpClientException if the request fails
      */
-    public HttpResponse put(String path, String jsonBody, HttpHeaders headers, Duration timeout) {
-        HttpRequest request = HttpRequest.put(buildUrl(path))
+    public JbhHttpResponse put(String path, String jsonBody, JbhHttpHeaders headers, Duration timeout) {
+        JbhHttpRequest request = JbhHttpRequest.put(buildUrl(path))
                 .jsonBody(jsonBody)
                 .headers(headers)
                 .timeout(timeout)
@@ -210,8 +209,8 @@ public class GatewayClient implements AutoCloseable {
      * @return the HTTP response
      * @throws HttpClientException if the request fails
      */
-    public HttpResponse delete(String path) {
-        return delete(path, HttpHeaders.empty());
+    public JbhHttpResponse delete(String path) {
+        return delete(path, JbhHttpHeaders.empty());
     }
     
     /**
@@ -222,7 +221,7 @@ public class GatewayClient implements AutoCloseable {
      * @return the HTTP response
      * @throws HttpClientException if the request fails
      */
-    public HttpResponse delete(String path, HttpHeaders headers) {
+    public JbhHttpResponse delete(String path, JbhHttpHeaders headers) {
         return delete(path, headers, defaultTimeout);
     }
     
@@ -235,8 +234,8 @@ public class GatewayClient implements AutoCloseable {
      * @return the HTTP response
      * @throws HttpClientException if the request fails
      */
-    public HttpResponse delete(String path, HttpHeaders headers, Duration timeout) {
-        HttpRequest request = HttpRequest.delete(buildUrl(path))
+    public JbhHttpResponse delete(String path, JbhHttpHeaders headers, Duration timeout) {
+        JbhHttpRequest request = JbhHttpRequest.delete(buildUrl(path))
                 .headers(headers)
                 .timeout(timeout)
                 .build();
@@ -253,8 +252,8 @@ public class GatewayClient implements AutoCloseable {
      * @param path the path to append to the base URL
      * @return a CompletableFuture that will complete with the HTTP response
      */
-    public CompletableFuture<HttpResponse> getAsync(String path) {
-        return getAsync(path, HttpHeaders.empty());
+    public CompletableFuture<JbhHttpResponse> getAsync(String path) {
+        return getAsync(path, JbhHttpHeaders.empty());
     }
     
     /**
@@ -264,8 +263,8 @@ public class GatewayClient implements AutoCloseable {
      * @param headers additional headers to include in the request
      * @return a CompletableFuture that will complete with the HTTP response
      */
-    public CompletableFuture<HttpResponse> getAsync(String path, HttpHeaders headers) {
-        HttpRequest request = HttpRequest.get(buildUrl(path))
+    public CompletableFuture<JbhHttpResponse> getAsync(String path, JbhHttpHeaders headers) {
+        JbhHttpRequest request = JbhHttpRequest.get(buildUrl(path))
                 .headers(headers)
                 .timeout(defaultTimeout)
                 .build();
@@ -281,8 +280,8 @@ public class GatewayClient implements AutoCloseable {
      * @param jsonBody the JSON request body
      * @return a CompletableFuture that will complete with the HTTP response
      */
-    public CompletableFuture<HttpResponse> postAsync(String path, String jsonBody) {
-        return postAsync(path, jsonBody, HttpHeaders.empty());
+    public CompletableFuture<JbhHttpResponse> postAsync(String path, String jsonBody) {
+        return postAsync(path, jsonBody, JbhHttpHeaders.empty());
     }
     
     /**
@@ -293,8 +292,8 @@ public class GatewayClient implements AutoCloseable {
      * @param headers additional headers to include in the request
      * @return a CompletableFuture that will complete with the HTTP response
      */
-    public CompletableFuture<HttpResponse> postAsync(String path, String jsonBody, HttpHeaders headers) {
-        HttpRequest request = HttpRequest.post(buildUrl(path))
+    public CompletableFuture<JbhHttpResponse> postAsync(String path, String jsonBody, JbhHttpHeaders headers) {
+        JbhHttpRequest request = JbhHttpRequest.post(buildUrl(path))
                 .jsonBody(jsonBody)
                 .headers(headers)
                 .timeout(defaultTimeout)
@@ -313,7 +312,7 @@ public class GatewayClient implements AutoCloseable {
      * @return the HTTP response
      * @throws HttpClientException if the request fails
      */
-    public HttpResponse execute(HttpRequest request) {
+    public JbhHttpResponse execute(JbhHttpRequest request) {
         log.debug("Executing custom request: {} {}", request.getMethod(), request.getUri());
         return httpClient.execute(request);
     }
@@ -324,7 +323,7 @@ public class GatewayClient implements AutoCloseable {
      * @param request the HTTP request to execute
      * @return a CompletableFuture that will complete with the HTTP response
      */
-    public CompletableFuture<HttpResponse> executeAsync(HttpRequest request) {
+    public CompletableFuture<JbhHttpResponse> executeAsync(JbhHttpRequest request) {
         log.debug("Executing async custom request: {} {}", request.getMethod(), request.getUri());
         return httpClient.executeAsync(request);
     }
@@ -337,8 +336,8 @@ public class GatewayClient implements AutoCloseable {
      * @param path the path to append to the base URL
      * @return a request builder
      */
-    public HttpRequest.Builder request(HttpMethod method, String path) {
-        return HttpRequest.builder()
+    public JbhHttpRequest.Builder request(JbhHttpMethod method, String path) {
+        return JbhHttpRequest.builder()
                 .method(method)
                 .uri(buildUrl(path))
                 .timeout(defaultTimeout);

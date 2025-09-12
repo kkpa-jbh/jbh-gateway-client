@@ -1,8 +1,8 @@
 package com.jbh.api.client.http;
 
-import com.jbh.api.client.http.model.HttpHeaders;
-import com.jbh.api.client.http.model.HttpRequest;
-import com.jbh.api.client.http.model.HttpResponse;
+import com.jbh.api.client.http.model.JbhHttpHeaders;
+import com.jbh.api.client.http.model.JbhHttpRequest;
+import com.jbh.api.client.http.model.JbhHttpResponse;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
@@ -12,28 +12,28 @@ import java.util.function.Function;
  * Allows tests to simulate various HTTP responses and error conditions
  * without making actual network calls.
  */
-public class MockHttpClientAdapter implements HttpClientAdapter {
+public class MockHttpClientAdapter implements JbhHttpClientAdapter {
 
-    private Function<HttpRequest, HttpResponse> responseProvider;
-    private Function<HttpRequest, RuntimeException> exceptionProvider;
+    private Function<JbhHttpRequest, JbhHttpResponse> responseProvider;
+    private Function<JbhHttpRequest, RuntimeException> exceptionProvider;
     private boolean closed = false;
 
     public MockHttpClientAdapter() {
         this.responseProvider = this::defaultResponse;
     }
 
-    public MockHttpClientAdapter(Function<HttpRequest, HttpResponse> responseProvider) {
+    public MockHttpClientAdapter(Function<JbhHttpRequest, JbhHttpResponse> responseProvider) {
         this.responseProvider = responseProvider;
     }
 
-    public static MockHttpClientAdapter withResponse(HttpResponse response) {
+    public static MockHttpClientAdapter withResponse(JbhHttpResponse response) {
         return new MockHttpClientAdapter(request -> response);
     }
 
     public static MockHttpClientAdapter withStatusCode(int statusCode) {
-        HttpResponse response = HttpResponse.builder()
+        JbhHttpResponse response = JbhHttpResponse.builder()
                 .statusCode(statusCode)
-                .headers(HttpHeaders.builder()
+                .headers(JbhHttpHeaders.builder()
                         .add("Content-Type", "application/json")
                         .build())
                 .body("{\"message\":\"Mock response\"}")
@@ -47,7 +47,7 @@ public class MockHttpClientAdapter implements HttpClientAdapter {
         return adapter;
     }
 
-    public MockHttpClientAdapter thenReturn(HttpResponse response) {
+    public MockHttpClientAdapter thenReturn(JbhHttpResponse response) {
         this.responseProvider = request -> response;
         return this;
     }
@@ -58,7 +58,7 @@ public class MockHttpClientAdapter implements HttpClientAdapter {
     }
 
     @Override
-    public HttpResponse execute(HttpRequest request) {
+    public JbhHttpResponse execute(JbhHttpRequest request) {
         if (closed) {
             throw new IllegalStateException("HttpClientAdapter has been closed");
         }
@@ -71,9 +71,9 @@ public class MockHttpClientAdapter implements HttpClientAdapter {
     }
 
     @Override
-    public CompletableFuture<HttpResponse> executeAsync(HttpRequest request) {
+    public CompletableFuture<JbhHttpResponse> executeAsync(JbhHttpRequest request) {
         try {
-            HttpResponse response = execute(request);
+            JbhHttpResponse response = execute(request);
             return CompletableFuture.completedFuture(response);
         } catch (RuntimeException e) {
             return CompletableFuture.failedFuture(e);
@@ -99,10 +99,10 @@ public class MockHttpClientAdapter implements HttpClientAdapter {
         return closed;
     }
 
-    private HttpResponse defaultResponse(HttpRequest request) {
-        return HttpResponse.builder()
+    private JbhHttpResponse defaultResponse(JbhHttpRequest request) {
+        return JbhHttpResponse.builder()
                 .statusCode(200)
-                .headers(HttpHeaders.builder()
+                .headers(JbhHttpHeaders.builder()
                         .add("Content-Type", "application/json")
                         .add("X-Mock-Response", "true")
                         .build())

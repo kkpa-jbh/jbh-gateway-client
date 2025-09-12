@@ -4,7 +4,7 @@ package com.jbh.api.client.http.model;
  * Enumeration of supported HTTP methods.
  * Provides type-safe representation of HTTP methods across all client implementations.
  */
-public enum HttpMethod {
+public enum JbhHttpMethod {
     GET,
     POST,
     PUT,

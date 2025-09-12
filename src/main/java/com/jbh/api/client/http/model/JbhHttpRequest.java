@@ -10,15 +10,15 @@ import java.util.Optional;
  * Contains all necessary information to execute an HTTP request including
  * method, URI, headers, body, and timeout configuration.
  */
-public final class HttpRequest {
+public final class JbhHttpRequest {
 
-    private final HttpMethod method;
+    private final JbhHttpMethod method;
     private final URI uri;
-    private final HttpHeaders headers;
+    private final JbhHttpHeaders headers;
     private final Optional<String> body;
     private final Duration timeout;
 
-    private HttpRequest(HttpMethod method, URI uri, HttpHeaders headers, Optional<String> body, Duration timeout) {
+    private JbhHttpRequest(JbhHttpMethod method, URI uri, JbhHttpHeaders headers, Optional<String> body, Duration timeout) {
         this.method = method;
         this.uri = uri;
         this.headers = headers;
@@ -31,38 +31,38 @@ public final class HttpRequest {
     }
 
     public static Builder get(String uri) {
-        return builder().method(HttpMethod.GET).uri(URI.create(uri));
+        return builder().method(JbhHttpMethod.GET).uri(URI.create(uri));
     }
 
     public static Builder get(URI uri) {
-        return builder().method(HttpMethod.GET).uri(uri);
+        return builder().method(JbhHttpMethod.GET).uri(uri);
     }
 
     public static Builder post(String uri) {
-        return builder().method(HttpMethod.POST).uri(URI.create(uri));
+        return builder().method(JbhHttpMethod.POST).uri(URI.create(uri));
     }
 
     public static Builder post(URI uri) {
-        return builder().method(HttpMethod.POST).uri(uri);
+        return builder().method(JbhHttpMethod.POST).uri(uri);
     }
 
     public static Builder put(String uri) {
-        return builder().method(HttpMethod.PUT).uri(URI.create(uri));
+        return builder().method(JbhHttpMethod.PUT).uri(URI.create(uri));
     }
 
     public static Builder put(URI uri) {
-        return builder().method(HttpMethod.PUT).uri(uri);
+        return builder().method(JbhHttpMethod.PUT).uri(uri);
     }
 
     public static Builder delete(String uri) {
-        return builder().method(HttpMethod.DELETE).uri(URI.create(uri));
+        return builder().method(JbhHttpMethod.DELETE).uri(URI.create(uri));
     }
 
     public static Builder delete(URI uri) {
-        return builder().method(HttpMethod.DELETE).uri(uri);
+        return builder().method(JbhHttpMethod.DELETE).uri(uri);
     }
 
-    public HttpMethod getMethod() {
+    public JbhHttpMethod getMethod() {
         return method;
     }
 
@@ -70,7 +70,7 @@ public final class HttpRequest {
         return uri;
     }
 
-    public HttpHeaders getHeaders() {
+    public JbhHttpHeaders getHeaders() {
         return headers;
     }
 
@@ -86,7 +86,7 @@ public final class HttpRequest {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        HttpRequest that = (HttpRequest) o;
+        JbhHttpRequest that = (JbhHttpRequest) o;
         return method == that.method &&
                 Objects.equals(uri, that.uri) &&
                 Objects.equals(headers, that.headers) &&
@@ -111,13 +111,13 @@ public final class HttpRequest {
     }
 
     public static class Builder {
-        private HttpMethod method;
+        private JbhHttpMethod method;
         private URI uri;
-        private HttpHeaders.Builder headersBuilder = HttpHeaders.builder();
+        private JbhHttpHeaders.Builder headersBuilder = JbhHttpHeaders.builder();
         private String body;
         private Duration timeout = Duration.ofSeconds(30); // Default 30 second timeout
 
-        public Builder method(HttpMethod method) {
+        public Builder method(JbhHttpMethod method) {
             this.method = method;
             return this;
         }
@@ -137,7 +137,7 @@ public final class HttpRequest {
             return this;
         }
 
-        public Builder headers(HttpHeaders headers) {
+        public Builder headers(JbhHttpHeaders headers) {
             headersBuilder.addAll(headers);
             return this;
         }
@@ -158,12 +158,12 @@ public final class HttpRequest {
             return this;
         }
 
-        public HttpRequest build() {
+        public JbhHttpRequest build() {
             Objects.requireNonNull(method, "Method cannot be null");
             Objects.requireNonNull(uri, "URI cannot be null");
             Objects.requireNonNull(timeout, "Timeout cannot be null");
 
-            return new HttpRequest(
+            return new JbhHttpRequest(
                     method,
                     uri,
                     headersBuilder.build(),

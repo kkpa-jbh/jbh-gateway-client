@@ -2,10 +2,10 @@ package com.jbh.api.client;
 
 import com.jbh.api.client.config.HttpClientConfig;
 import com.jbh.api.client.config.RetryConfig;
-import com.jbh.api.client.http.HttpClientAdapter;
-import com.jbh.api.client.http.HttpClientFactory;
-import com.jbh.api.client.http.model.HttpRequest;
-import com.jbh.api.client.http.model.HttpResponse;
+import com.jbh.api.client.http.JbhHttpClientAdapter;
+import com.jbh.api.client.http.JbhHttpClientFactory;
+import com.jbh.api.client.http.model.JbhHttpRequest;
+import com.jbh.api.client.http.model.JbhHttpResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,16 +17,16 @@ import java.util.concurrent.CompletableFuture;
  * Shows how different HTTP client implementations can be used interchangeably
  * through the adapter pattern, enabling easy testing and configuration switching.
  */
-public class GatewayClientRunner {
+public class JbhApiGatewayClientRunner {
     
-    private static final Logger log = LoggerFactory.getLogger(GatewayClientRunner.class);
+    private static final Logger log = LoggerFactory.getLogger(JbhApiGatewayClientRunner.class);
 
     public static void main(String[] args) {
         log.info("Starting JBH Gateway Client demonstration...");
         
         try {
             // Create HTTP client factory
-            HttpClientFactory factory = HttpClientFactory.createDefault();
+            JbhHttpClientFactory factory = JbhHttpClientFactory.createDefault();
             
             // Demonstrate different configurations
             demonstrateBasicUsage(factory);
@@ -44,15 +44,15 @@ public class GatewayClientRunner {
         log.info("JBH Gateway Client demonstration completed.");
     }
 
-    private static void demonstrateBasicUsage(HttpClientFactory factory) {
+    private static void demonstrateBasicUsage(JbhHttpClientFactory factory) {
         log.info("=== Demonstrating Basic HTTP Client Adapter Usage ===");
         
         // Create adapter with default configuration
-        HttpClientAdapter adapter = factory.createAdapter("native");
+        JbhHttpClientAdapter adapter = factory.createAdapter("native");
         
         try {
             // Create a simple GET request
-            HttpRequest request = HttpRequest.get("https://httpbin.org/get")
+            JbhHttpRequest request = JbhHttpRequest.get("https://httpbin.org/get")
                     .header("User-Agent", "jbh-api-client/1.0")
                     .header("Accept", "application/json")
                     .build();
@@ -60,7 +60,7 @@ public class GatewayClientRunner {
             log.info("Executing request: {} {}", request.getMethod(), request.getUri());
             
             // Execute the request
-            HttpResponse response = adapter.execute(request);
+            JbhHttpResponse response = adapter.execute(request);
             
             log.info("Response: {} - {}", response.getStatusCode(), 
                     response.isSuccessful() ? "SUCCESS" : "ERROR");
@@ -75,7 +75,7 @@ public class GatewayClientRunner {
         }
     }
 
-    private static void demonstrateCustomConfiguration(HttpClientFactory factory) {
+    private static void demonstrateCustomConfiguration(JbhHttpClientFactory factory) {
         log.info("=== Demonstrating Custom Configuration ===");
         
         // Create custom configuration
@@ -94,14 +94,14 @@ public class GatewayClientRunner {
         log.info("Created custom configuration: {}", customConfig);
         
         // Create adapter with custom configuration
-        HttpClientAdapter adapter = factory.createAdapter("native", customConfig);
+        JbhHttpClientAdapter adapter = factory.createAdapter("native", customConfig);
         
         try {
             // Test POST request with JSON body
             String jsonBody = "{\"message\":\"Hello from JBH Gateway Client\",\"timestamp\":\"" + 
                     java.time.Instant.now() + "\"}";
             
-            HttpRequest request = HttpRequest.post("https://httpbin.org/post")
+            JbhHttpRequest request = JbhHttpRequest.post("https://httpbin.org/post")
                     .jsonBody(jsonBody)
                     .header("X-Custom-Header", "JBH-Test")
                     .timeout(Duration.ofSeconds(5))
@@ -109,7 +109,7 @@ public class GatewayClientRunner {
             
             log.info("Executing POST request with JSON body");
             
-            HttpResponse response = adapter.execute(request);
+            JbhHttpResponse response = adapter.execute(request);
             
             log.info("POST Response: {} - Content-Length: {}", 
                     response.getStatusCode(),
@@ -122,17 +122,17 @@ public class GatewayClientRunner {
         }
     }
 
-    private static void demonstrateAsyncRequests(HttpClientFactory factory) {
+    private static void demonstrateAsyncRequests(JbhHttpClientFactory factory) {
         log.info("=== Demonstrating Asynchronous Requests ===");
         
-        HttpClientAdapter adapter = factory.getOrCreateAdapter("native");
+        JbhHttpClientAdapter adapter = factory.getOrCreateAdapter("native");
         
         try {
             // Create multiple requests
-            HttpRequest[] requests = {
-                HttpRequest.get("https://httpbin.org/delay/1").build(),
-                HttpRequest.get("https://httpbin.org/json").build(),
-                HttpRequest.get("https://httpbin.org/headers").build()
+            JbhHttpRequest[] requests = {
+                JbhHttpRequest.get("https://httpbin.org/delay/1").build(),
+                JbhHttpRequest.get("https://httpbin.org/json").build(),
+                JbhHttpRequest.get("https://httpbin.org/headers").build()
             };
             
             // Execute all requests asynchronously
@@ -162,10 +162,10 @@ public class GatewayClientRunner {
         }
     }
 
-    private static void demonstrateErrorHandling(HttpClientFactory factory) {
+    private static void demonstrateErrorHandling(JbhHttpClientFactory factory) {
         log.info("=== Demonstrating Error Handling ===");
         
-        HttpClientAdapter adapter = factory.getOrCreateAdapter("native");
+        JbhHttpClientAdapter adapter = factory.getOrCreateAdapter("native");
         
         // Test various error scenarios
         testErrorScenario(adapter, "https://httpbin.org/status/404", "404 Not Found");
@@ -173,20 +173,20 @@ public class GatewayClientRunner {
         testErrorScenario(adapter, "https://invalid-domain-that-does-not-exist.com", "Connection Error");
         
         // Test timeout
-        HttpRequest timeoutRequest = HttpRequest.get("https://httpbin.org/delay/10")
+        JbhHttpRequest timeoutRequest = JbhHttpRequest.get("https://httpbin.org/delay/10")
                 .timeout(Duration.ofSeconds(2))
                 .build();
         testErrorScenario(adapter, timeoutRequest, "Timeout Error");
     }
 
-    private static void testErrorScenario(HttpClientAdapter adapter, String url, String scenarioName) {
-        testErrorScenario(adapter, HttpRequest.get(url).build(), scenarioName);
+    private static void testErrorScenario(JbhHttpClientAdapter adapter, String url, String scenarioName) {
+        testErrorScenario(adapter, JbhHttpRequest.get(url).build(), scenarioName);
     }
 
-    private static void testErrorScenario(HttpClientAdapter adapter, HttpRequest request, String scenarioName) {
+    private static void testErrorScenario(JbhHttpClientAdapter adapter, JbhHttpRequest request, String scenarioName) {
         try {
             log.info("Testing {}: {} {}", scenarioName, request.getMethod(), request.getUri());
-            HttpResponse response = adapter.execute(request);
+            JbhHttpResponse response = adapter.execute(request);
             
             if (response.isSuccessful()) {
                 log.info("{} - Unexpected success: {}", scenarioName, response.getStatusCode());

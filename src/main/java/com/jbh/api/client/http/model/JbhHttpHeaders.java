@@ -7,28 +7,28 @@ import java.util.*;
  * Provides case-insensitive header operations and support for multiple values per header.
  * Designed to be thread-safe and efficient for header manipulation across different HTTP clients.
  */
-public final class HttpHeaders {
+public final class JbhHttpHeaders {
 
     private final Map<String, List<String>> headers;
 
-    private HttpHeaders(Map<String, List<String>> headers) {
+    private JbhHttpHeaders(Map<String, List<String>> headers) {
         this.headers = Collections.unmodifiableMap(new TreeMap<>(String.CASE_INSENSITIVE_ORDER) {{
             headers.forEach((key, values) -> put(key, List.copyOf(values)));
         }});
     }
 
-    public static HttpHeaders fromMap(Map<String, String> headers) {
+    public static JbhHttpHeaders fromMap(Map<String, String> headers) {
         Map<String, List<String>> headerMap = new HashMap<>();
         headers.forEach((key, value) -> headerMap.put(key, List.of(value)));
-        return new HttpHeaders(headerMap);
+        return new JbhHttpHeaders(headerMap);
     }
 
-    public static HttpHeaders fromMultiMap(Map<String, List<String>> headers) {
-        return new HttpHeaders(headers);
+    public static JbhHttpHeaders fromMultiMap(Map<String, List<String>> headers) {
+        return new JbhHttpHeaders(headers);
     }
 
-    public static HttpHeaders empty() {
-        return new HttpHeaders(Map.of());
+    public static JbhHttpHeaders empty() {
+        return new JbhHttpHeaders(Map.of());
     }
 
     public static Builder builder() {
@@ -56,24 +56,24 @@ public final class HttpHeaders {
         return headers.containsKey(name);
     }
 
-    public HttpHeaders with(String name, String value) {
+    public JbhHttpHeaders with(String name, String value) {
         return builder()
                 .addAll(this)
                 .add(name, value)
                 .build();
     }
 
-    public HttpHeaders without(String name) {
+    public JbhHttpHeaders without(String name) {
         Map<String, List<String>> newHeaders = new HashMap<>(headers);
         newHeaders.remove(name);
-        return new HttpHeaders(newHeaders);
+        return new JbhHttpHeaders(newHeaders);
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        HttpHeaders that = (HttpHeaders) o;
+        JbhHttpHeaders that = (JbhHttpHeaders) o;
         return Objects.equals(headers, that.headers);
     }
 
@@ -100,7 +100,7 @@ public final class HttpHeaders {
             return this;
         }
 
-        public Builder addAll(HttpHeaders httpHeaders) {
+        public Builder addAll(JbhHttpHeaders httpHeaders) {
             httpHeaders.headers.forEach((name, values) -> 
                 headers.computeIfAbsent(name, k -> new ArrayList<>()).addAll(values));
             return this;
@@ -111,8 +111,8 @@ public final class HttpHeaders {
             return this;
         }
 
-        public HttpHeaders build() {
-            return new HttpHeaders(headers);
+        public JbhHttpHeaders build() {
+            return new JbhHttpHeaders(headers);
         }
     }
 }

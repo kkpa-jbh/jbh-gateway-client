@@ -14,19 +14,19 @@ import java.util.function.Function;
  * Supports different HTTP client implementations and provides caching for efficient resource management.
  * Allows easy switching between different HTTP client implementations for testing and production use.
  */
-public class HttpClientFactory {
+public class JbhHttpClientFactory {
 
-    private static final Logger log = LoggerFactory.getLogger(HttpClientFactory.class);
+    private static final Logger log = LoggerFactory.getLogger(JbhHttpClientFactory.class);
 
-    private final Map<String, Function<HttpClientConfig, HttpClientAdapter>> adapterFactories;
-    private final Map<String, HttpClientAdapter> adapterCache;
+    private final Map<String, Function<HttpClientConfig, JbhHttpClientAdapter>> adapterFactories;
+    private final Map<String, JbhHttpClientAdapter> adapterCache;
     private final HttpClientConfig defaultConfig;
 
-    public HttpClientFactory() {
+    public JbhHttpClientFactory() {
         this(HttpClientConfig.defaultConfig());
     }
 
-    public HttpClientFactory(HttpClientConfig defaultConfig) {
+    public JbhHttpClientFactory(HttpClientConfig defaultConfig) {
         this.defaultConfig = defaultConfig;
         this.adapterFactories = new ConcurrentHashMap<>();
         this.adapterCache = new ConcurrentHashMap<>();
@@ -41,7 +41,7 @@ public class HttpClientFactory {
      * @return the HTTP client adapter instance
      * @throws IllegalArgumentException if the adapter type is not supported
      */
-    public HttpClientAdapter createAdapter(String adapterType) {
+    public JbhHttpClientAdapter createAdapter(String adapterType) {
         return createAdapter(adapterType, defaultConfig);
     }
 
@@ -53,14 +53,14 @@ public class HttpClientFactory {
      * @return the HTTP client adapter instance
      * @throws IllegalArgumentException if the adapter type is not supported
      */
-    public HttpClientAdapter createAdapter(String adapterType, HttpClientConfig config) {
-        Function<HttpClientConfig, HttpClientAdapter> factory = adapterFactories.get(adapterType.toLowerCase());
+    public JbhHttpClientAdapter createAdapter(String adapterType, HttpClientConfig config) {
+        Function<HttpClientConfig, JbhHttpClientAdapter> factory = adapterFactories.get(adapterType.toLowerCase());
         if (factory == null) {
             throw new IllegalArgumentException("Unsupported HTTP client adapter type: " + adapterType + 
                     ". Supported types: " + getSupportedAdapterTypes());
         }
 
-        HttpClientAdapter adapter = factory.apply(config);
+        JbhHttpClientAdapter adapter = factory.apply(config);
         log.info("Created {} HTTP client adapter with config: {}", adapterType, config);
         return adapter;
     }
@@ -72,7 +72,7 @@ public class HttpClientFactory {
      * @param adapterType the type of adapter to get or create
      * @return the cached HTTP client adapter instance
      */
-    public HttpClientAdapter getOrCreateAdapter(String adapterType) {
+    public JbhHttpClientAdapter getOrCreateAdapter(String adapterType) {
         return getOrCreateAdapter(adapterType, defaultConfig);
     }
 
@@ -84,7 +84,7 @@ public class HttpClientFactory {
      * @param config the configuration to use
      * @return the cached HTTP client adapter instance
      */
-    public HttpClientAdapter getOrCreateAdapter(String adapterType, HttpClientConfig config) {
+    public JbhHttpClientAdapter getOrCreateAdapter(String adapterType, HttpClientConfig config) {
         String cacheKey = adapterType.toLowerCase() + "_" + config.hashCode();
         
         return adapterCache.computeIfAbsent(cacheKey, key -> {
@@ -100,7 +100,7 @@ public class HttpClientFactory {
      * @param adapterType the type name for the adapter
      * @param factory the factory function that creates adapter instances
      */
-    public void registerAdapter(String adapterType, Function<HttpClientConfig, HttpClientAdapter> factory) {
+    public void registerAdapter(String adapterType, Function<HttpClientConfig, JbhHttpClientAdapter> factory) {
         adapterFactories.put(adapterType.toLowerCase(), factory);
         log.info("Registered HTTP client adapter factory for type: {}", adapterType);
     }
@@ -140,7 +140,7 @@ public class HttpClientFactory {
      */
     public void evictFromCache(String adapterType, HttpClientConfig config) {
         String cacheKey = adapterType.toLowerCase() + "_" + config.hashCode();
-        HttpClientAdapter adapter = adapterCache.remove(cacheKey);
+        JbhHttpClientAdapter adapter = adapterCache.remove(cacheKey);
         
         if (adapter != null) {
             log.debug("Evicted adapter from cache: {}", cacheKey);
@@ -174,8 +174,8 @@ public class HttpClientFactory {
      * 
      * @return a new factory instance with default settings
      */
-    public static HttpClientFactory createDefault() {
-        return new HttpClientFactory();
+    public static JbhHttpClientFactory createDefault() {
+        return new JbhHttpClientFactory();
     }
 
     /**
@@ -184,7 +184,7 @@ public class HttpClientFactory {
      * @param defaultConfig the default configuration to use
      * @return a new factory instance with the specified default configuration
      */
-    public static HttpClientFactory createWithConfig(HttpClientConfig defaultConfig) {
-        return new HttpClientFactory(defaultConfig);
+    public static JbhHttpClientFactory createWithConfig(HttpClientConfig defaultConfig) {
+        return new JbhHttpClientFactory(defaultConfig);
     }
 }

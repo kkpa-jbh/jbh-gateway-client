@@ -8,24 +8,24 @@ import java.util.Optional;
  * Contains status code, headers, and response body.
  * Provides utility methods for common response operations.
  */
-public final class HttpResponse {
+public final class JbhHttpResponse {
 
     private final int statusCode;
-    private final HttpHeaders headers;
+    private final JbhHttpHeaders headers;
     private final Optional<String> body;
 
-    private HttpResponse(int statusCode, HttpHeaders headers, Optional<String> body) {
+    private JbhHttpResponse(int statusCode, JbhHttpHeaders headers, Optional<String> body) {
         this.statusCode = statusCode;
         this.headers = headers;
         this.body = body;
     }
 
-    public static HttpResponse of(int statusCode, HttpHeaders headers, String body) {
-        return new HttpResponse(statusCode, headers, Optional.ofNullable(body));
+    public static JbhHttpResponse of(int statusCode, JbhHttpHeaders headers, String body) {
+        return new JbhHttpResponse(statusCode, headers, Optional.ofNullable(body));
     }
 
-    public static HttpResponse of(int statusCode, HttpHeaders headers) {
-        return new HttpResponse(statusCode, headers, Optional.empty());
+    public static JbhHttpResponse of(int statusCode, JbhHttpHeaders headers) {
+        return new JbhHttpResponse(statusCode, headers, Optional.empty());
     }
 
     public static Builder builder() {
@@ -36,7 +36,7 @@ public final class HttpResponse {
         return statusCode;
     }
 
-    public HttpHeaders getHeaders() {
+    public JbhHttpHeaders getHeaders() {
         return headers;
     }
 
@@ -79,7 +79,7 @@ public final class HttpResponse {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        HttpResponse that = (HttpResponse) o;
+        JbhHttpResponse that = (JbhHttpResponse) o;
         return statusCode == that.statusCode &&
                 Objects.equals(headers, that.headers) &&
                 Objects.equals(body, that.body);
@@ -101,7 +101,7 @@ public final class HttpResponse {
 
     public static class Builder {
         private int statusCode;
-        private HttpHeaders.Builder headersBuilder = HttpHeaders.builder();
+        private JbhHttpHeaders.Builder headersBuilder = JbhHttpHeaders.builder();
         private String body;
 
         public Builder statusCode(int statusCode) {
@@ -114,7 +114,7 @@ public final class HttpResponse {
             return this;
         }
 
-        public Builder headers(HttpHeaders headers) {
+        public Builder headers(JbhHttpHeaders headers) {
             headersBuilder.addAll(headers);
             return this;
         }
@@ -124,8 +124,8 @@ public final class HttpResponse {
             return this;
         }
 
-        public HttpResponse build() {
-            return new HttpResponse(statusCode, headersBuilder.build(), Optional.ofNullable(body));
+        public JbhHttpResponse build() {
+            return new JbhHttpResponse(statusCode, headersBuilder.build(), Optional.ofNullable(body));
         }
     }
 }
