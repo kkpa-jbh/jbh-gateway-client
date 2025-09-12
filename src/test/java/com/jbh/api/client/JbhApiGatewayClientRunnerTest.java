@@ -9,6 +9,7 @@ import com.jbh.api.client.http.MockHttpClientAdapter;
 import com.jbh.api.client.core.http.model.JbhHttpHeaders;
 import com.jbh.api.client.core.http.model.JbhHttpRequest;
 import com.jbh.api.client.core.http.model.JbhHttpResponse;
+import com.jbh.api.client.dto.TestUserDto;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -255,5 +256,129 @@ class JbhApiGatewayClientRunnerTest {
         }
         
         assertTrue(future.isCompletedExceptionally());
+    }
+
+    @Test
+    void testTypedResponseDeserialization() {
+        String jsonResponse = "{\"id\":\"123\",\"name\":\"John Doe\",\"email\":\"john@example.com\",\"createdAt\":\"2023-01-01T12:00:00\"}";
+        
+        JbhHttpResponse mockResponse = JbhHttpResponse.builder()
+                .statusCode(200)
+                .headers(JbhHttpHeaders.builder()
+                        .add("Content-Type", "application/json")
+                        .build())
+                .body(jsonResponse)
+                .build();
+        
+        mockAdapter.thenReturn(mockResponse);
+        
+        JbhHttpClientAdapter adapter = factory.createAdapter(AdapterType.MOCK);
+        
+        try {
+            JbhHttpRequest request = JbhHttpRequest.get("https://api.example.com/user/123").build();
+            
+            JbhHttpResponse response = adapter.executeForObject(request, TestUserDto.class);
+            
+            assertTrue(response.isSuccessful());
+            assertEquals(200, response.getStatusCode());
+            assertTrue(response.hasTypedBody());
+            
+            TestUserDto user = response.getBodyAs(TestUserDto.class).orElse(null);
+            assertNotNull(user);
+            assertEquals("123", user.getId());
+            assertEquals("John Doe", user.getName());
+            assertEquals("john@example.com", user.getEmail());
+            
+            // String body should still be available
+            assertTrue(response.getBody().isPresent());
+            assertEquals(jsonResponse, response.getBody().get());
+            
+        } finally {
+            adapter.close();
+        }
+    }
+
+    @Test
+    void testAsyncTypedResponseDeserialization() throws Exception {
+        String jsonResponse = "{\"id\":\"456\",\"name\":\"Jane Smith\",\"email\":\"jane@example.com\",\"createdAt\":\"2023-02-01T10:30:00\"}";
+        
+        JbhHttpResponse mockResponse = JbhHttpResponse.builder()
+                .statusCode(200)
+                .headers(JbhHttpHeaders.builder()
+                        .add("Content-Type", "application/json")
+                        .build())
+                .body(jsonResponse)
+                .build();
+        
+        mockAdapter.thenReturn(mockResponse);
+        
+        JbhHttpClientAdapter adapter = factory.getOrCreateAdapter(AdapterType.MOCK);
+        
+        JbhHttpRequest request = JbhHttpRequest.get("https://api.example.com/user/456").build();
+        
+        CompletableFuture<JbhHttpResponse> future = adapter.executeAsyncForObject(request, TestUserDto.class);
+        
+        JbhHttpResponse response = future.get(5, TimeUnit.SECONDS);
+        
+        assertTrue(response.isSuccessful());
+        assertTrue(response.hasTypedBody());
+        
+        TestUserDto user = response.getBodyAs(TestUserDto.class).orElse(null);
+        assertNotNull(user);
+        assertEquals("456", user.getId());
+        assertEquals("Jane Smith", user.getName());
+    }
+
+    @Test
+    void testTypedResponseWithInvalidJson() {
+        String invalidJson = "{invalid json";
+        
+        JbhHttpResponse mockResponse = JbhHttpResponse.builder()
+                .statusCode(200)
+                .headers(JbhHttpHeaders.builder()
+                        .add("Content-Type", "application/json")
+                        .build())
+                .body(invalidJson)
+                .build();
+        
+        mockAdapter.thenReturn(mockResponse);
+        
+        JbhHttpClientAdapter adapter = factory.getOrCreateAdapter(AdapterType.MOCK);
+        
+        JbhHttpRequest request = JbhHttpRequest.get("https://api.example.com/user/invalid").build();
+        
+        JbhHttpResponse response = adapter.executeForObject(request, TestUserDto.class);
+        
+        assertTrue(response.isSuccessful());
+        // Should fallback gracefully - no typed body but string body still available
+        assertFalse(response.hasTypedBody());
+        assertTrue(response.getBodyAs(TestUserDto.class).isEmpty());
+        assertTrue(response.getBody().isPresent());
+        assertEquals(invalidJson, response.getBody().get());
+    }
+
+    @Test
+    void testTypedResponseWithErrorStatus() {
+        JbhHttpResponse errorResponse = JbhHttpResponse.builder()
+                .statusCode(404)
+                .headers(JbhHttpHeaders.builder()
+                        .add("Content-Type", "application/json")
+                        .build())
+                .body("{\"error\":\"User not found\"}")
+                .build();
+        
+        mockAdapter.thenReturn(errorResponse);
+        
+        JbhHttpClientAdapter adapter = factory.getOrCreateAdapter(AdapterType.MOCK);
+        
+        JbhHttpRequest request = JbhHttpRequest.get("https://api.example.com/user/999").build();
+        
+        JbhHttpResponse response = adapter.executeForObject(request, TestUserDto.class);
+        
+        assertFalse(response.isSuccessful());
+        assertEquals(404, response.getStatusCode());
+        // Should not attempt deserialization for error responses
+        assertFalse(response.hasTypedBody());
+        assertTrue(response.getBodyAs(TestUserDto.class).isEmpty());
     }
 }

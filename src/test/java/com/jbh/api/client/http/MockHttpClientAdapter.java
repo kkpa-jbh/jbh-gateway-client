@@ -1,5 +1,6 @@
 package com.jbh.api.client.http;
 
+import com.jbh.api.client.core.JacksonJsonUtil;
 import com.jbh.api.client.core.http.JbhHttpClientAdapter;
 import com.jbh.api.client.core.http.model.JbhHttpHeaders;
 import com.jbh.api.client.core.http.model.JbhHttpRequest;
@@ -82,6 +83,30 @@ public class MockHttpClientAdapter implements JbhHttpClientAdapter {
     }
 
     @Override
+    public <T> JbhHttpResponse executeForObject(JbhHttpRequest request, Class<T> responseType) {
+        if (closed) {
+            throw new IllegalStateException("HttpClientAdapter has been closed");
+        }
+
+        if (exceptionProvider != null) {
+            throw exceptionProvider.apply(request);
+        }
+
+        JbhHttpResponse stringResponse = responseProvider.apply(request);
+        return convertToTypedResponse(stringResponse, responseType);
+    }
+
+    @Override
+    public <T> CompletableFuture<JbhHttpResponse> executeAsyncForObject(JbhHttpRequest request, Class<T> responseType) {
+        try {
+            JbhHttpResponse response = executeForObject(request, responseType);
+            return CompletableFuture.completedFuture(response);
+        } catch (RuntimeException e) {
+            return CompletableFuture.failedFuture(e);
+        }
+    }
+
+    @Override
     public String getAdapterName() {
         return "mock";
     }
@@ -98,6 +123,24 @@ public class MockHttpClientAdapter implements JbhHttpClientAdapter {
 
     public boolean isClosed() {
         return closed;
+    }
+
+    private <T> JbhHttpResponse convertToTypedResponse(JbhHttpResponse stringResponse, Class<T> responseType) {
+        // Only attempt JSON deserialization for successful responses with a body
+        if (stringResponse.isSuccessful() && stringResponse.getBody().isPresent() && !stringResponse.getBody().get().isEmpty()) {
+            try {
+                T typedBody = JacksonJsonUtil.fromJson(stringResponse.getBody().get(), responseType);
+                return JbhHttpResponse.ofTyped(
+                    stringResponse.getStatusCode(), 
+                    stringResponse.getHeaders(), 
+                    stringResponse.getBody().get(), 
+                    typedBody);
+            } catch (Exception e) {
+                // Fall back to original response if deserialization fails
+                return stringResponse;
+            }
+        }
+        return stringResponse;
     }
 
     private JbhHttpResponse defaultResponse(JbhHttpRequest request) {

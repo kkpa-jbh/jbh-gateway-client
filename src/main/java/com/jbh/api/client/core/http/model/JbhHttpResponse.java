@@ -13,19 +13,25 @@ public final class JbhHttpResponse {
     private final int statusCode;
     private final JbhHttpHeaders headers;
     private final Optional<String> body;
+    private final Optional<Object> typedBody;
 
-    private JbhHttpResponse(int statusCode, JbhHttpHeaders headers, Optional<String> body) {
+    private JbhHttpResponse(int statusCode, JbhHttpHeaders headers, Optional<String> body, Optional<Object> typedBody) {
         this.statusCode = statusCode;
         this.headers = headers;
         this.body = body;
+        this.typedBody = typedBody;
     }
 
     public static JbhHttpResponse of(int statusCode, JbhHttpHeaders headers, String body) {
-        return new JbhHttpResponse(statusCode, headers, Optional.ofNullable(body));
+        return new JbhHttpResponse(statusCode, headers, Optional.ofNullable(body), Optional.empty());
     }
 
     public static JbhHttpResponse of(int statusCode, JbhHttpHeaders headers) {
-        return new JbhHttpResponse(statusCode, headers, Optional.empty());
+        return new JbhHttpResponse(statusCode, headers, Optional.empty(), Optional.empty());
+    }
+
+    public static <T> JbhHttpResponse ofTyped(int statusCode, JbhHttpHeaders headers, String body, T typedBody) {
+        return new JbhHttpResponse(statusCode, headers, Optional.ofNullable(body), Optional.ofNullable(typedBody));
     }
 
     public static Builder builder() {
@@ -42,6 +48,28 @@ public final class JbhHttpResponse {
 
     public Optional<String> getBody() {
         return body;
+    }
+
+    /**
+     * Get the response body as the specified type.
+     * 
+     * @param <T> the expected type
+     * @param clazz the class of the expected type
+     * @return the typed body if available and of the correct type
+     */
+    @SuppressWarnings("unchecked")
+    public <T> Optional<T> getBodyAs(Class<T> clazz) {
+        return typedBody.filter(obj -> clazz.isInstance(obj))
+                .map(obj -> (T) obj);
+    }
+
+    /**
+     * Check if this response has a typed body.
+     * 
+     * @return true if a typed body is present
+     */
+    public boolean hasTypedBody() {
+        return typedBody.isPresent();
     }
 
     public boolean isSuccessful() {
@@ -82,12 +110,13 @@ public final class JbhHttpResponse {
         JbhHttpResponse that = (JbhHttpResponse) o;
         return statusCode == that.statusCode &&
                 Objects.equals(headers, that.headers) &&
-                Objects.equals(body, that.body);
+                Objects.equals(body, that.body) &&
+                Objects.equals(typedBody, that.typedBody);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(statusCode, headers, body);
+        return Objects.hash(statusCode, headers, body, typedBody);
     }
 
     @Override
@@ -103,6 +132,7 @@ public final class JbhHttpResponse {
         private int statusCode;
         private JbhHttpHeaders.Builder headersBuilder = JbhHttpHeaders.builder();
         private String body;
+        private Object typedBody;
 
         public Builder statusCode(int statusCode) {
             this.statusCode = statusCode;
@@ -124,8 +154,13 @@ public final class JbhHttpResponse {
             return this;
         }
 
+        public <T> Builder typedBody(T typedBody) {
+            this.typedBody = typedBody;
+            return this;
+        }
+
         public JbhHttpResponse build() {
-            return new JbhHttpResponse(statusCode, headersBuilder.build(), Optional.ofNullable(body));
+            return new JbhHttpResponse(statusCode, headersBuilder.build(), Optional.ofNullable(body), Optional.ofNullable(typedBody));
         }
     }
 }

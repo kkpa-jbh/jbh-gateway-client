@@ -2,6 +2,7 @@ package com.jbh.api.client.core.http.adapter;
 
 import com.jbh.api.client.config.JbhHttpClientConfig;
 import com.jbh.api.client.config.JbhRetryConfig;
+import com.jbh.api.client.core.JacksonJsonUtil;
 import com.jbh.api.client.core.http.JbhHttpClientAdapter;
 import com.jbh.api.client.core.http.exception.HttpClientException;
 import com.jbh.api.client.core.http.exception.HttpConnectionException;
@@ -81,10 +82,164 @@ public class NativeHttpClientAdapter implements JbhHttpClientAdapter {
   }
 
   @Override
+  public <T> JbhHttpResponse executeForObject(JbhHttpRequest request, Class<T> responseType) {
+    log.debug("Executing synchronous typed request: {} {} -> {}", request.getMethod(), request.getUri(), responseType.getSimpleName());
+    
+    try {
+      return executeWithRetryForObject(request, responseType, config.getRetryConfig());
+    } catch (Exception e) {
+      throw mapException(e, request);
+    }
+  }
+
+  @Override
+  public <T> CompletableFuture<JbhHttpResponse> executeAsyncForObject(JbhHttpRequest request, Class<T> responseType) {
+    log.debug("Executing asynchronous typed request: {} {} -> {}", request.getMethod(), request.getUri(), responseType.getSimpleName());
+    
+    return executeAsyncWithRetryForObject(request, responseType, config.getRetryConfig())
+        .exceptionally(throwable -> {
+          throw mapException(throwable, request);
+        });
+  }
+
+  @Override
   public void close() {
     log.debug("Closing Native HTTP Client adapter");
     // Native HTTP client doesn't require explicit cleanup
     // Connection pools are managed automatically by the JVM
+  }
+
+  private <T> JbhHttpResponse executeWithRetryForObject(JbhHttpRequest request, Class<T> responseType, JbhRetryConfig retryConfig) {
+    Exception lastException = null;
+
+    for (int attempt = 1; attempt <= retryConfig.getMaxAttempts(); attempt++) {
+      try {
+        if (attempt > 1) {
+          Duration delay = retryConfig.calculateDelay(attempt);
+          log.debug(
+              "Retrying typed request (attempt {}/{}) after {} ms delay",
+              attempt,
+              retryConfig.getMaxAttempts(),
+              delay.toMillis());
+          Thread.sleep(delay.toMillis());
+        }
+
+        HttpRequest nativeRequest = convertRequest(request);
+        HttpResponse<String> nativeResponse =
+            httpClient.send(nativeRequest, HttpResponse.BodyHandlers.ofString());
+
+        JbhHttpResponse response = convertResponseWithType(nativeResponse, responseType);
+
+        // Check if we should retry based on status code
+        if (attempt < retryConfig.getMaxAttempts()
+            && retryConfig.shouldRetryForStatusCode(response.getStatusCode())) {
+          log.debug(
+              "Received retryable status code {} for typed attempt {}/{}",
+              response.getStatusCode(),
+              attempt,
+              retryConfig.getMaxAttempts());
+          continue;
+        }
+
+        log.debug(
+            "Typed request completed successfully on attempt {}/{} with status {}",
+            attempt,
+            retryConfig.getMaxAttempts(),
+            response.getStatusCode());
+        return response;
+
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        throw new HttpClientException("Typed request was interrupted", e);
+      } catch (Exception e) {
+        lastException = e;
+
+        if (attempt >= retryConfig.getMaxAttempts() || !retryConfig.shouldRetryForException(e)) {
+          break;
+        }
+
+        log.debug(
+            "Typed request failed on attempt {}/{}, will retry: {}",
+            attempt,
+            retryConfig.getMaxAttempts(),
+            e.getMessage());
+      }
+    }
+
+    throw mapException(lastException, request);
+  }
+
+  private <T> CompletableFuture<JbhHttpResponse> executeAsyncWithRetryForObject(
+      JbhHttpRequest request, Class<T> responseType, JbhRetryConfig retryConfig) {
+    return executeAsyncWithRetryInternalForObject(request, responseType, retryConfig, 1);
+  }
+
+  private <T> CompletableFuture<JbhHttpResponse> executeAsyncWithRetryInternalForObject(
+      JbhHttpRequest request, Class<T> responseType, JbhRetryConfig retryConfig, int attempt) {
+
+    try {
+      HttpRequest nativeRequest = convertRequest(request);
+
+      return httpClient
+          .sendAsync(nativeRequest, HttpResponse.BodyHandlers.ofString())
+          .thenApply(response -> convertResponseWithType(response, responseType))
+          .thenCompose(
+              response -> {
+                // Check if we should retry based on status code
+                if (attempt < retryConfig.getMaxAttempts()
+                    && retryConfig.shouldRetryForStatusCode(response.getStatusCode())) {
+
+                  Duration delay = retryConfig.calculateDelay(attempt + 1);
+                  log.debug(
+                      "Received retryable status code {} for async typed attempt {}/{}, retrying after {} ms",
+                      response.getStatusCode(),
+                      attempt,
+                      retryConfig.getMaxAttempts(),
+                      delay.toMillis());
+
+                  CompletableFuture<Void> delayFuture = new CompletableFuture<>();
+                  java.util.concurrent.Executors.newSingleThreadScheduledExecutor()
+                      .schedule(
+                          () -> delayFuture.complete(null),
+                          delay.toNanos(),
+                          java.util.concurrent.TimeUnit.NANOSECONDS);
+                  return delayFuture.thenCompose(
+                      v -> executeAsyncWithRetryInternalForObject(request, responseType, retryConfig, attempt + 1));
+                }
+
+                return CompletableFuture.completedFuture(response);
+              })
+          .exceptionally(
+              throwable -> {
+                if (attempt < retryConfig.getMaxAttempts()
+                    && retryConfig.shouldRetryForException(throwable)) {
+
+                  Duration delay = retryConfig.calculateDelay(attempt + 1);
+                  log.debug(
+                      "Async typed request failed on attempt {}/{}, retrying after {} ms: {}",
+                      attempt,
+                      retryConfig.getMaxAttempts(),
+                      delay.toMillis(),
+                      throwable.getMessage());
+
+                  CompletableFuture<Void> delayFuture = new CompletableFuture<>();
+                  java.util.concurrent.Executors.newSingleThreadScheduledExecutor()
+                      .schedule(
+                          () -> delayFuture.complete(null),
+                          delay.toNanos(),
+                          java.util.concurrent.TimeUnit.NANOSECONDS);
+                  return delayFuture
+                      .thenCompose(
+                          v -> executeAsyncWithRetryInternalForObject(request, responseType, retryConfig, attempt + 1))
+                      .join();
+                }
+
+                throw mapException(throwable, request);
+              });
+
+    } catch (Exception e) {
+      return CompletableFuture.failedFuture(mapException(e, request));
+    }
   }
 
   private HttpClient createHttpClient(JbhHttpClientConfig config) {
@@ -303,6 +458,31 @@ public class NativeHttpClientAdapter implements JbhHttpClientAdapter {
 
     return JbhHttpResponse.of(
         nativeResponse.statusCode(), headersBuilder.build(), nativeResponse.body());
+  }
+
+  private <T> JbhHttpResponse convertResponseWithType(HttpResponse<String> nativeResponse, Class<T> responseType) {
+    JbhHttpHeaders.Builder headersBuilder = JbhHttpHeaders.builder();
+    nativeResponse
+        .headers()
+        .map()
+        .forEach((name, values) -> values.forEach(value -> headersBuilder.add(name, value)));
+
+    String responseBody = nativeResponse.body();
+    T typedBody = null;
+
+    // Only attempt JSON deserialization for successful responses with a body
+    if (nativeResponse.statusCode() >= 200 && nativeResponse.statusCode() < 300 && responseBody != null && !responseBody.isEmpty()) {
+      try {
+        typedBody = JacksonJsonUtil.fromJson(responseBody, responseType);
+        log.debug("Successfully deserialized response body to {}", responseType.getSimpleName());
+      } catch (Exception e) {
+        log.warn("Failed to deserialize response body to {}: {}", responseType.getSimpleName(), e.getMessage());
+        // Continue with null typedBody - the raw string body will still be available
+      }
+    }
+
+    return JbhHttpResponse.ofTyped(
+        nativeResponse.statusCode(), headersBuilder.build(), responseBody, typedBody);
   }
 
   private RuntimeException mapException(Throwable throwable, JbhHttpRequest request) {
