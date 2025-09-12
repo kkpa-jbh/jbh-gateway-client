@@ -1,14 +1,14 @@
-package com.jbh.api.client.http.adapter;
+package com.jbh.api.client.core.http.adapter;
 
 import com.jbh.api.client.config.JbhHttpClientConfig;
 import com.jbh.api.client.config.JbhRetryConfig;
-import com.jbh.api.client.http.JbhHttpClientAdapter;
-import com.jbh.api.client.http.exception.HttpClientException;
-import com.jbh.api.client.http.exception.HttpConnectionException;
-import com.jbh.api.client.http.exception.HttpTimeoutException;
-import com.jbh.api.client.http.model.JbhHttpHeaders;
-import com.jbh.api.client.http.model.JbhHttpRequest;
-import com.jbh.api.client.http.model.JbhHttpResponse;
+import com.jbh.api.client.core.http.JbhHttpClientAdapter;
+import com.jbh.api.client.core.http.exception.HttpClientException;
+import com.jbh.api.client.core.http.exception.HttpConnectionException;
+import com.jbh.api.client.core.http.exception.HttpTimeoutException;
+import com.jbh.api.client.core.http.model.JbhHttpHeaders;
+import com.jbh.api.client.core.http.model.JbhHttpRequest;
+import com.jbh.api.client.core.http.model.JbhHttpResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,7 +1,7 @@
-package com.jbh.api.client.http;
+package com.jbh.api.client.core.http;
 
 import com.jbh.api.client.config.JbhHttpClientConfig;
-import com.jbh.api.client.http.adapter.NativeHttpClientAdapter;
+import com.jbh.api.client.core.http.adapter.NativeHttpClientAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

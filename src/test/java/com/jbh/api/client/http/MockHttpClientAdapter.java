@@ -1,8 +1,9 @@
 package com.jbh.api.client.http;
 
-import com.jbh.api.client.http.model.JbhHttpHeaders;
-import com.jbh.api.client.http.model.JbhHttpRequest;
-import com.jbh.api.client.http.model.JbhHttpResponse;
+import com.jbh.api.client.core.http.JbhHttpClientAdapter;
+import com.jbh.api.client.core.http.model.JbhHttpHeaders;
+import com.jbh.api.client.core.http.model.JbhHttpRequest;
+import com.jbh.api.client.core.http.model.JbhHttpResponse;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;

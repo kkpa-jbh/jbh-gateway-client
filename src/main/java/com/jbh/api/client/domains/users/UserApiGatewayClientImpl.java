@@ -1,7 +1,7 @@
 package com.jbh.api.client.domains.users;
 
 import com.jbh.api.client.core.JbhHttpValidator;
-import com.jbh.api.client.http.model.JbhHttpHeaders;
+import com.jbh.api.client.core.http.model.JbhHttpHeaders;
 import com.jbh.api.client.vo.JbhApiException;
 import java.util.Map;
 

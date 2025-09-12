@@ -1,4 +1,4 @@
-package com.jbh.api.client.http.model;
+package com.jbh.api.client.core.http.model;
 
 import java.util.Objects;
 import java.util.Optional;

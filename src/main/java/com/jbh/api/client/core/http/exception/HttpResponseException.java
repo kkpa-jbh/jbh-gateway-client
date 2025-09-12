@@ -1,4 +1,4 @@
-package com.jbh.api.client.http.exception;
+package com.jbh.api.client.core.http.exception;
 
 /**
  * Exception thrown when HTTP requests receive error responses (4xx, 5xx status codes).

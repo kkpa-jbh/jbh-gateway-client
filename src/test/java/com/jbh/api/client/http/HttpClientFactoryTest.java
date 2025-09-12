@@ -1,6 +1,8 @@
 package com.jbh.api.client.http;
 
 import com.jbh.api.client.config.JbhHttpClientConfig;
+import com.jbh.api.client.core.http.JbhHttpClientAdapter;
+import com.jbh.api.client.core.http.JbhHttpClientFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

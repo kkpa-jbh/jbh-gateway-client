@@ -1,4 +1,4 @@
-package com.jbh.api.client.http.model;
+package com.jbh.api.client.core.http.model;
 
 import com.jbh.api.client.vo.JbhApiException;
 import com.jbh.api.client.vo.JbhHttpHeaderNames;

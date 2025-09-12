@@ -2,12 +2,12 @@ package com.jbh.api.client;
 
 import com.jbh.api.client.config.JbhHttpClientConfig;
 import com.jbh.api.client.config.JbhRetryConfig;
-import com.jbh.api.client.http.JbhHttpClientAdapter;
-import com.jbh.api.client.http.JbhHttpClientFactory;
+import com.jbh.api.client.core.http.JbhHttpClientAdapter;
+import com.jbh.api.client.core.http.JbhHttpClientFactory;
 import com.jbh.api.client.http.MockHttpClientAdapter;
-import com.jbh.api.client.http.model.JbhHttpHeaders;
-import com.jbh.api.client.http.model.JbhHttpRequest;
-import com.jbh.api.client.http.model.JbhHttpResponse;
+import com.jbh.api.client.core.http.model.JbhHttpHeaders;
+import com.jbh.api.client.core.http.model.JbhHttpRequest;
+import com.jbh.api.client.core.http.model.JbhHttpResponse;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

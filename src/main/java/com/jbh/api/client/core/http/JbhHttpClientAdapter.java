@@ -1,8 +1,8 @@
-package com.jbh.api.client.http;
+package com.jbh.api.client.core.http;
 
-import com.jbh.api.client.http.exception.HttpClientException;
-import com.jbh.api.client.http.model.JbhHttpRequest;
-import com.jbh.api.client.http.model.JbhHttpResponse;
+import com.jbh.api.client.core.http.exception.HttpClientException;
+import com.jbh.api.client.core.http.model.JbhHttpRequest;
+import com.jbh.api.client.core.http.model.JbhHttpResponse;
 
 import java.util.concurrent.CompletableFuture;
 
