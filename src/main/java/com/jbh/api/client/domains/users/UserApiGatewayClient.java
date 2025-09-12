@@ -1,4 +1,4 @@
-package com.jbh.api.client.users;
+package com.jbh.api.client.domains.users;
 
 import com.jbh.api.client.vo.JbhApiException;
 import java.util.Map;

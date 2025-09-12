@@ -1,6 +1,6 @@
 package com.jbh.api.client.http;
 
-import com.jbh.api.client.config.HttpClientConfig;
+import com.jbh.api.client.config.JbhHttpClientConfig;
 import com.jbh.api.client.http.adapter.NativeHttpClientAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,15 +18,15 @@ public class JbhHttpClientFactory {
 
     private static final Logger log = LoggerFactory.getLogger(JbhHttpClientFactory.class);
 
-    private final Map<String, Function<HttpClientConfig, JbhHttpClientAdapter>> adapterFactories;
+    private final Map<String, Function<JbhHttpClientConfig, JbhHttpClientAdapter>> adapterFactories;
     private final Map<String, JbhHttpClientAdapter> adapterCache;
-    private final HttpClientConfig defaultConfig;
+    private final JbhHttpClientConfig defaultConfig;
 
     public JbhHttpClientFactory() {
-        this(HttpClientConfig.defaultConfig());
+        this(JbhHttpClientConfig.defaultConfig());
     }
 
-    public JbhHttpClientFactory(HttpClientConfig defaultConfig) {
+    public JbhHttpClientFactory(JbhHttpClientConfig defaultConfig) {
         this.defaultConfig = defaultConfig;
         this.adapterFactories = new ConcurrentHashMap<>();
         this.adapterCache = new ConcurrentHashMap<>();
@@ -53,8 +53,8 @@ public class JbhHttpClientFactory {
      * @return the HTTP client adapter instance
      * @throws IllegalArgumentException if the adapter type is not supported
      */
-    public JbhHttpClientAdapter createAdapter(String adapterType, HttpClientConfig config) {
-        Function<HttpClientConfig, JbhHttpClientAdapter> factory = adapterFactories.get(adapterType.toLowerCase());
+    public JbhHttpClientAdapter createAdapter(String adapterType, JbhHttpClientConfig config) {
+        Function<JbhHttpClientConfig, JbhHttpClientAdapter> factory = adapterFactories.get(adapterType.toLowerCase());
         if (factory == null) {
             throw new IllegalArgumentException("Unsupported HTTP client adapter type: " + adapterType + 
                     ". Supported types: " + getSupportedAdapterTypes());
@@ -84,7 +84,7 @@ public class JbhHttpClientFactory {
      * @param config the configuration to use
      * @return the cached HTTP client adapter instance
      */
-    public JbhHttpClientAdapter getOrCreateAdapter(String adapterType, HttpClientConfig config) {
+    public JbhHttpClientAdapter getOrCreateAdapter(String adapterType, JbhHttpClientConfig config) {
         String cacheKey = adapterType.toLowerCase() + "_" + config.hashCode();
         
         return adapterCache.computeIfAbsent(cacheKey, key -> {
@@ -100,7 +100,7 @@ public class JbhHttpClientFactory {
      * @param adapterType the type name for the adapter
      * @param factory the factory function that creates adapter instances
      */
-    public void registerAdapter(String adapterType, Function<HttpClientConfig, JbhHttpClientAdapter> factory) {
+    public void registerAdapter(String adapterType, Function<JbhHttpClientConfig, JbhHttpClientAdapter> factory) {
         adapterFactories.put(adapterType.toLowerCase(), factory);
         log.info("Registered HTTP client adapter factory for type: {}", adapterType);
     }
@@ -138,7 +138,7 @@ public class JbhHttpClientFactory {
      * @param adapterType the type of adapter to remove
      * @param config the configuration used for the adapter
      */
-    public void evictFromCache(String adapterType, HttpClientConfig config) {
+    public void evictFromCache(String adapterType, JbhHttpClientConfig config) {
         String cacheKey = adapterType.toLowerCase() + "_" + config.hashCode();
         JbhHttpClientAdapter adapter = adapterCache.remove(cacheKey);
         
@@ -184,7 +184,7 @@ public class JbhHttpClientFactory {
      * @param defaultConfig the default configuration to use
      * @return a new factory instance with the specified default configuration
      */
-    public static JbhHttpClientFactory createWithConfig(HttpClientConfig defaultConfig) {
+    public static JbhHttpClientFactory createWithConfig(JbhHttpClientConfig defaultConfig) {
         return new JbhHttpClientFactory(defaultConfig);
     }
 }

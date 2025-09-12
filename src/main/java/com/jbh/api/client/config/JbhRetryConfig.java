@@ -10,7 +10,7 @@ import java.util.function.Predicate;
  * Defines retry policies including maximum attempts, backoff strategies,
  * and conditions for when retries should be attempted.
  */
-public final class RetryConfig {
+public final class JbhRetryConfig {
 
     private final int maxAttempts;
     private final Duration initialDelay;
@@ -21,7 +21,7 @@ public final class RetryConfig {
     private final boolean retryOnTimeout;
     private final boolean retryOnConnectionFailure;
 
-    private RetryConfig(Builder builder) {
+    private JbhRetryConfig(Builder builder) {
         this.maxAttempts = builder.maxAttempts;
         this.initialDelay = builder.initialDelay;
         this.maxDelay = builder.maxDelay;
@@ -36,11 +36,11 @@ public final class RetryConfig {
         return new Builder();
     }
 
-    public static RetryConfig defaultConfig() {
+    public static JbhRetryConfig defaultConfig() {
         return builder().build();
     }
 
-    public static RetryConfig noRetries() {
+    public static JbhRetryConfig noRetries() {
         return builder().maxAttempts(1).build();
     }
 
@@ -103,7 +103,7 @@ public final class RetryConfig {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        RetryConfig that = (RetryConfig) o;
+        JbhRetryConfig that = (JbhRetryConfig) o;
         return maxAttempts == that.maxAttempts &&
                 Double.compare(that.backoffMultiplier, backoffMultiplier) == 0 &&
                 retryOnTimeout == that.retryOnTimeout &&
@@ -191,8 +191,8 @@ public final class RetryConfig {
             return this;
         }
 
-        public RetryConfig build() {
-            return new RetryConfig(this);
+        public JbhRetryConfig build() {
+            return new JbhRetryConfig(this);
         }
     }
 }

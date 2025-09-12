@@ -1,7 +1,7 @@
 package com.jbh.api.client.http.adapter;
 
-import com.jbh.api.client.config.HttpClientConfig;
-import com.jbh.api.client.config.RetryConfig;
+import com.jbh.api.client.config.JbhHttpClientConfig;
+import com.jbh.api.client.config.JbhRetryConfig;
 import com.jbh.api.client.http.JbhHttpClientAdapter;
 import com.jbh.api.client.http.exception.HttpClientException;
 import com.jbh.api.client.http.exception.HttpConnectionException;
@@ -31,19 +31,19 @@ public class NativeHttpClientAdapter implements JbhHttpClientAdapter {
     private static final Logger log = LoggerFactory.getLogger(NativeHttpClientAdapter.class);
 
     private final HttpClient httpClient;
-    private final HttpClientConfig config;
+    private final JbhHttpClientConfig config;
 
-    public NativeHttpClientAdapter(HttpClientConfig config) {
+    public NativeHttpClientAdapter(JbhHttpClientConfig config) {
         this.config = config;
         this.httpClient = createHttpClient(config);
         log.info("Initialized Native HTTP Client adapter with config: {}", config);
     }
 
     public static NativeHttpClientAdapter create() {
-        return new NativeHttpClientAdapter(HttpClientConfig.defaultConfig());
+        return new NativeHttpClientAdapter(JbhHttpClientConfig.defaultConfig());
     }
 
-    public static NativeHttpClientAdapter create(HttpClientConfig config) {
+    public static NativeHttpClientAdapter create(JbhHttpClientConfig config) {
         return new NativeHttpClientAdapter(config);
     }
 
@@ -89,7 +89,7 @@ public class NativeHttpClientAdapter implements JbhHttpClientAdapter {
         // Connection pools are managed automatically by the JVM
     }
 
-    private HttpClient createHttpClient(HttpClientConfig config) {
+    private HttpClient createHttpClient(JbhHttpClientConfig config) {
         HttpClient.Builder builder = HttpClient.newBuilder()
                 .connectTimeout(config.getConnectTimeout())
                 .followRedirects(config.isFollowRedirects() ? 
@@ -123,7 +123,7 @@ public class NativeHttpClientAdapter implements JbhHttpClientAdapter {
     }
 
     private JbhHttpResponse executeWithRetry(
-            JbhHttpRequest request, RetryConfig retryConfig) {
+            JbhHttpRequest request, JbhRetryConfig retryConfig) {
         
         Exception lastException = null;
         
@@ -174,13 +174,13 @@ public class NativeHttpClientAdapter implements JbhHttpClientAdapter {
     }
 
     private CompletableFuture<JbhHttpResponse> executeAsyncWithRetry(
-            JbhHttpRequest request, RetryConfig retryConfig) {
+            JbhHttpRequest request, JbhRetryConfig retryConfig) {
         
         return executeAsyncWithRetryInternal(request, retryConfig, 1);
     }
 
     private CompletableFuture<JbhHttpResponse> executeAsyncWithRetryInternal(
-            JbhHttpRequest request, RetryConfig retryConfig, int attempt) {
+            JbhHttpRequest request, JbhRetryConfig retryConfig, int attempt) {
         
         try {
             HttpRequest nativeRequest = convertRequest(request);

@@ -1,9 +1,9 @@
 package com.jbh.api.client.config;
 
-public class GatewayHostConfig {
+public class JbhGatewayHostConfig {
   private final String baseUrl;
 
-  private GatewayHostConfig(final Builder builder) {
+  private JbhGatewayHostConfig(final Builder builder) {
     this.baseUrl = builder.baseUrl;
   }
 
@@ -20,8 +20,8 @@ public class GatewayHostConfig {
       return this;
     }
 
-    public GatewayHostConfig build() {
-      return new GatewayHostConfig(this);
+    public JbhGatewayHostConfig build() {
+      return new JbhGatewayHostConfig(this);
     }
   }
 }

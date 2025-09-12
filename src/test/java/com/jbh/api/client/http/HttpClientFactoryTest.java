@@ -1,6 +1,6 @@
 package com.jbh.api.client.http;
 
-import com.jbh.api.client.config.HttpClientConfig;
+import com.jbh.api.client.config.JbhHttpClientConfig;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,7 +40,7 @@ class HttpClientFactoryTest {
 
     @Test
     void shouldCreateAdapterWithCustomConfig() {
-        HttpClientConfig config = HttpClientConfig.builder()
+        JbhHttpClientConfig config = JbhHttpClientConfig.builder()
                 .connectTimeout(java.time.Duration.ofSeconds(5))
                 .enableHttp2(false)
                 .build();
@@ -64,8 +64,8 @@ class HttpClientFactoryTest {
 
     @Test
     void shouldCreateDifferentAdaptersForDifferentConfigs() {
-        HttpClientConfig config1 = HttpClientConfig.builder().connectTimeout(java.time.Duration.ofSeconds(5)).build();
-        HttpClientConfig config2 = HttpClientConfig.builder().connectTimeout(java.time.Duration.ofSeconds(10)).build();
+        JbhHttpClientConfig config1 = JbhHttpClientConfig.builder().connectTimeout(java.time.Duration.ofSeconds(5)).build();
+        JbhHttpClientConfig config2 = JbhHttpClientConfig.builder().connectTimeout(java.time.Duration.ofSeconds(10)).build();
         
         JbhHttpClientAdapter adapter1 = factory.getOrCreateAdapter("native", config1);
         JbhHttpClientAdapter adapter2 = factory.getOrCreateAdapter("native", config2);
@@ -94,7 +94,7 @@ class HttpClientFactoryTest {
 
     @Test
     void shouldEvictFromCache() {
-        HttpClientConfig config = HttpClientConfig.defaultConfig();
+        JbhHttpClientConfig config = JbhHttpClientConfig.defaultConfig();
         JbhHttpClientAdapter adapter = factory.getOrCreateAdapter("native", config);
         
         assertNotNull(adapter);

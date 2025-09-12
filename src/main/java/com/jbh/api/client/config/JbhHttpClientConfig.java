@@ -9,7 +9,7 @@ import java.util.Optional;
  * Contains common configuration options that can be applied to different HTTP client implementations.
  * Supports fluent builder pattern for easy configuration setup.
  */
-public final class HttpClientConfig {
+public final class JbhHttpClientConfig {
 
     private final Duration connectTimeout;
     private final Duration requestTimeout;
@@ -20,9 +20,9 @@ public final class HttpClientConfig {
     private final boolean enableHttp2;
     private final boolean enableCompression;
     private final Optional<String> userAgent;
-    private final RetryConfig retryConfig;
+    private final JbhRetryConfig retryConfig;
 
-    private HttpClientConfig(Builder builder) {
+    private JbhHttpClientConfig(Builder builder) {
         this.connectTimeout = builder.connectTimeout;
         this.requestTimeout = builder.requestTimeout;
         this.readTimeout = builder.readTimeout;
@@ -39,7 +39,7 @@ public final class HttpClientConfig {
         return new Builder();
     }
 
-    public static HttpClientConfig defaultConfig() {
+    public static JbhHttpClientConfig defaultConfig() {
         return builder().build();
     }
 
@@ -79,7 +79,7 @@ public final class HttpClientConfig {
         return userAgent;
     }
 
-    public RetryConfig getRetryConfig() {
+    public JbhRetryConfig getRetryConfig() {
         return retryConfig;
     }
 
@@ -87,7 +87,7 @@ public final class HttpClientConfig {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        HttpClientConfig that = (HttpClientConfig) o;
+        JbhHttpClientConfig that = (JbhHttpClientConfig) o;
         return maxConnections == that.maxConnections &&
                 maxConnectionsPerHost == that.maxConnectionsPerHost &&
                 followRedirects == that.followRedirects &&
@@ -133,7 +133,7 @@ public final class HttpClientConfig {
         private boolean enableHttp2 = true;
         private boolean enableCompression = true;
         private String userAgent;
-        private RetryConfig retryConfig = RetryConfig.defaultConfig();
+        private JbhRetryConfig retryConfig = JbhRetryConfig.defaultConfig();
 
         public Builder connectTimeout(Duration connectTimeout) {
             this.connectTimeout = Objects.requireNonNull(connectTimeout, "Connect timeout cannot be null");
@@ -186,13 +186,13 @@ public final class HttpClientConfig {
             return this;
         }
 
-        public Builder retryConfig(RetryConfig retryConfig) {
+        public Builder retryConfig(JbhRetryConfig retryConfig) {
             this.retryConfig = Objects.requireNonNull(retryConfig, "Retry config cannot be null");
             return this;
         }
 
-        public HttpClientConfig build() {
-            return new HttpClientConfig(this);
+        public JbhHttpClientConfig build() {
+            return new JbhHttpClientConfig(this);
         }
     }
 }

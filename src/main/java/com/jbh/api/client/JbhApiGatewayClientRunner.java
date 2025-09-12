@@ -1,7 +1,7 @@
 package com.jbh.api.client;
 
-import com.jbh.api.client.config.HttpClientConfig;
-import com.jbh.api.client.config.RetryConfig;
+import com.jbh.api.client.config.JbhHttpClientConfig;
+import com.jbh.api.client.config.JbhRetryConfig;
 import com.jbh.api.client.http.JbhHttpClientAdapter;
 import com.jbh.api.client.http.JbhHttpClientFactory;
 import com.jbh.api.client.http.model.JbhHttpRequest;
@@ -79,13 +79,13 @@ public class JbhApiGatewayClientRunner {
         log.info("=== Demonstrating Custom Configuration ===");
         
         // Create custom configuration
-        HttpClientConfig customConfig = HttpClientConfig.builder()
+        JbhHttpClientConfig customConfig = JbhHttpClientConfig.builder()
                 .connectTimeout(Duration.ofSeconds(5))
                 .requestTimeout(Duration.ofSeconds(10))
                 .enableHttp2(true)
                 .enableCompression(true)
                 .userAgent("JBH-Custom-Client/2.0")
-                .retryConfig(RetryConfig.builder()
+                .retryConfig(JbhRetryConfig.builder()
                         .maxAttempts(2)
                         .initialDelay(Duration.ofMillis(100))
                         .build())

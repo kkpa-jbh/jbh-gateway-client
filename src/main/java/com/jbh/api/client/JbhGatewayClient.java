@@ -1,6 +1,6 @@
 package com.jbh.api.client;
 
-import com.jbh.api.client.config.HttpClientConfig;
+import com.jbh.api.client.config.JbhHttpClientConfig;
 import com.jbh.api.client.http.JbhHttpClientAdapter;
 import com.jbh.api.client.http.JbhHttpClientFactory;
 import com.jbh.api.client.http.model.JbhHttpHeaders;
@@ -42,7 +42,7 @@ public class JbhGatewayClient implements AutoCloseable {
      * @param httpClientConfig the HTTP client configuration
      * @throws IllegalArgumentException if parameters are invalid
      */
-    public JbhGatewayClient(String baseUrl, String httpClientType, HttpClientConfig httpClientConfig) {
+    public JbhGatewayClient(String baseUrl, String httpClientType, JbhHttpClientConfig httpClientConfig) {
         this.baseUrl = validateAndNormalizeBaseUrl(baseUrl);
         this.httpClientFactory = new JbhHttpClientFactory(httpClientConfig);
         this.httpClient = httpClientFactory.createAdapter(httpClientType, httpClientConfig);
@@ -57,7 +57,7 @@ public class JbhGatewayClient implements AutoCloseable {
      * @param baseUrl the base URL of the gateway service
      */
     public JbhGatewayClient(String baseUrl) {
-        this(baseUrl, "native", HttpClientConfig.defaultConfig());
+        this(baseUrl, "native", JbhHttpClientConfig.defaultConfig());
     }
     
     // GET request methods
