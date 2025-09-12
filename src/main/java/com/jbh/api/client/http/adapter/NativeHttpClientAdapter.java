@@ -9,8 +9,6 @@ import com.jbh.api.client.http.exception.HttpTimeoutException;
 import com.jbh.api.client.http.model.JbhHttpHeaders;
 import com.jbh.api.client.http.model.JbhHttpRequest;
 import com.jbh.api.client.http.model.JbhHttpResponse;
-import com.jbh.gateway.client.http.exception.*;
-import com.jbh.gateway.client.http.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
