@@ -8,14 +8,17 @@ import com.jbh.api.client.core.JbhHttpValidatorImpl;
 import com.jbh.api.client.core.http.AdapterType;
 
 public class BaseApiGatewayClient {
-  protected  JbhHttpValidator validator;
-
-  protected JbhGatewayClient jbhGatewayClient;
+  protected final JbhHttpValidator validator;
+  protected final JbhGatewayClient jbhGatewayClient;
   private final JbhGatewayHostConfig hostConfig;
 
   public BaseApiGatewayClient(JbhGatewayHostConfig hostConfig) {
+    this(hostConfig, new JbhHttpValidatorImpl());
+  }
+
+  public BaseApiGatewayClient(JbhGatewayHostConfig hostConfig, JbhHttpValidator validator) {
     this.hostConfig = hostConfig;
-    this.validator = new JbhHttpValidatorImpl();
+    this.validator = validator;
     this.jbhGatewayClient = new JbhGatewayClientImpl(getGatewayHostUrl(), AdapterType.NATIVE);
   }
 

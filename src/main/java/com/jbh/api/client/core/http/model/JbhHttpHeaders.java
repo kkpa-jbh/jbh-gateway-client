@@ -1,7 +1,5 @@
 package com.jbh.api.client.core.http.model;
 
-import com.jbh.api.client.api.JbhApiException;
-import com.jbh.api.client.api.JbhHttpHeaderNames;
 import java.util.*;
 
 /**
@@ -102,24 +100,6 @@ public final class JbhHttpHeaders {
     return "HttpHeaders{" + headers + '}';
   }
 
-  public void validateAuthHeader() throws JbhApiException {
-    if (!headers.containsKey(JbhHttpHeaderNames.REQ_JBH_TOKEN)) {
-      throw new JbhApiException("Authorization header not found");
-    }
-    if (!headers.containsKey(JbhHttpHeaderNames.REQ_SOURCE_HEADER)) {
-      throw new JbhApiException("Source header not found");
-    }
-
-    if (!headers.containsKey(JbhHttpHeaders.AUTHORIZATION_HEADER)) {
-      List<String> reqJbhTokens = headers.getOrDefault(JbhHttpHeaderNames.REQ_JBH_TOKEN, null);
-      if (reqJbhTokens != null && !reqJbhTokens.isEmpty()) {
-        String token = reqJbhTokens.get(0);
-        if (token != null && token.startsWith(JbhHttpHeaders.BEARER_TOKEN_PREFIX)) {
-          headers.put(JbhHttpHeaders.AUTHORIZATION_HEADER, Collections.singletonList(token));
-        }
-      }
-    }
-  }
 
   public static class Builder {
     private final Map<String, List<String>> headers = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
