@@ -11,6 +11,10 @@ import java.util.*;
  */
 public final class JbhHttpHeaders {
 
+  public static final String USER_AGENT_HEADER = "User-Agent";
+  public static final String AUTHORIZATION_HEADER = "Authorization";
+  public static final String BEARER_TOKEN_PREFIX = "Bearer ";
+
   private final Map<String, List<String>> headers;
 
   private JbhHttpHeaders(Map<String, List<String>> headers) {
@@ -34,7 +38,7 @@ public final class JbhHttpHeaders {
   }
 
   public static JbhHttpHeaders empty() {
-    return new JbhHttpHeaders(Map.of());
+    return new JbhHttpHeaders(new HashMap<>());
   }
 
   public static Builder builder() {
@@ -64,6 +68,14 @@ public final class JbhHttpHeaders {
 
   public JbhHttpHeaders with(String name, String value) {
     return builder().addAll(this).add(name, value).build();
+  }
+
+  public JbhHttpHeaders withAll(Map<String, String> customHeaders) {
+    if (customHeaders == null || customHeaders.isEmpty()) {
+      return this;
+    }
+
+    return builder().addAll(this).addAll(customHeaders).build();
   }
 
   public JbhHttpHeaders without(String name) {
@@ -96,6 +108,16 @@ public final class JbhHttpHeaders {
     }
     if (!headers.containsKey(JbhHttpHeaderNames.REQ_SOURCE_HEADER)) {
       throw new JbhApiException("Source header not found");
+    }
+
+    if (!headers.containsKey(JbhHttpHeaders.AUTHORIZATION_HEADER)) {
+      List<String> reqJbhTokens = headers.getOrDefault(JbhHttpHeaderNames.REQ_JBH_TOKEN, null);
+      if (reqJbhTokens != null && !reqJbhTokens.isEmpty()) {
+        String token = reqJbhTokens.get(0);
+        if (token != null && token.startsWith(JbhHttpHeaders.BEARER_TOKEN_PREFIX)) {
+          headers.put(JbhHttpHeaders.AUTHORIZATION_HEADER, Collections.singletonList(token));
+        }
+      }
     }
   }
 

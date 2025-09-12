@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
  * <p>This is the primary class that consuming microservices will interact with. It handles URL
  * construction, header propagation, and integrates with the underlying HTTP client adapters.
  */
-public class JbhGatewayClientImpl implements AutoCloseable {
+public class JbhGatewayClientImpl implements JbhGatewayClient {
 
   private static final Logger log = LoggerFactory.getLogger(JbhGatewayClientImpl.class);
 
@@ -32,6 +32,17 @@ public class JbhGatewayClientImpl implements AutoCloseable {
   private final JbhHttpClientAdapter jbhHttpClientAdapter;
   private final JbhHttpClientFactory jbhHttpClientFactory;
   private final Duration defaultTimeout;
+  private JbhHttpHeaders defaultJbhHttpHeaders;
+
+  /**
+   * Constructs a gateway client with default configuration.
+   *
+   * @param baseUrl the base URL of the gateway service
+   * @param adapterType the type of HTTP client adapter to use ("native", "okhttp")
+   */
+  public JbhGatewayClientImpl(String baseUrl, AdapterType adapterType) {
+    this(baseUrl, adapterType, JbhHttpClientConfig.defaultConfig());
+  }
 
   /**
    * Constructs a gateway client with the specified configuration.
@@ -48,6 +59,14 @@ public class JbhGatewayClientImpl implements AutoCloseable {
     this.jbhHttpClientAdapter =
         jbhHttpClientFactory.createAdapter(httpClientType, httpClientConfig);
     this.defaultTimeout = httpClientConfig.getRequestTimeout();
+    
+    defaultJbhHttpHeaders = JbhHttpHeaders.empty(); //From Map
+    if (httpClientConfig.getUserAgent().isPresent()) {
+      defaultJbhHttpHeaders = defaultJbhHttpHeaders.with(JbhHttpHeaders.USER_AGENT_HEADER, httpClientConfig.getUserAgent().get());
+    }
+    if (httpClientConfig.getCustomHeaders() != null && !httpClientConfig.getCustomHeaders().isEmpty()) {
+      defaultJbhHttpHeaders = defaultJbhHttpHeaders.withAll(httpClientConfig.getCustomHeaders());
+    }
 
     log.info(
         "Gateway client initialized with base URL: {}, client type: {}",
@@ -55,15 +74,7 @@ public class JbhGatewayClientImpl implements AutoCloseable {
         httpClientType);
   }
 
-  /**
-   * Constructs a gateway client with default configuration.
-   *
-   * @param baseUrl the base URL of the gateway service
-   * @param adapterType the type of HTTP client adapter to use ("native", "okhttp")
-   */
-  public JbhGatewayClientImpl(String baseUrl, AdapterType adapterType) {
-    this(baseUrl, adapterType, JbhHttpClientConfig.defaultConfig());
-  }
+  
 
   // GET request methods
 
@@ -74,8 +85,9 @@ public class JbhGatewayClientImpl implements AutoCloseable {
    * @return the HTTP response
    * @throws HttpClientException if the request fails
    */
+  @Override
   public JbhHttpResponse get(String path) {
-    return get(path, JbhHttpHeaders.empty());
+    return get(path, defaultJbhHttpHeaders );
   }
 
   /**
@@ -86,6 +98,7 @@ public class JbhGatewayClientImpl implements AutoCloseable {
    * @return the HTTP response
    * @throws HttpClientException if the request fails
    */
+  @Override
   public JbhHttpResponse get(String path, JbhHttpHeaders headers) {
     return get(path, headers, defaultTimeout);
   }
@@ -99,6 +112,7 @@ public class JbhGatewayClientImpl implements AutoCloseable {
    * @return the HTTP response
    * @throws HttpClientException if the request fails
    */
+  @Override
   public JbhHttpResponse get(String path, JbhHttpHeaders headers, Duration timeout) {
     JbhHttpRequest request =
         JbhHttpRequest.get(buildUrl(path)).headers(headers).timeout(timeout).build();
@@ -117,8 +131,9 @@ public class JbhGatewayClientImpl implements AutoCloseable {
    * @return the HTTP response
    * @throws HttpClientException if the request fails
    */
+  @Override
   public JbhHttpResponse post(String path, String jsonBody) {
-    return post(path, jsonBody, JbhHttpHeaders.empty());
+    return post(path, jsonBody, defaultJbhHttpHeaders);
   }
 
   /**
@@ -130,6 +145,7 @@ public class JbhGatewayClientImpl implements AutoCloseable {
    * @return the HTTP response
    * @throws HttpClientException if the request fails
    */
+  @Override
   public JbhHttpResponse post(String path, String jsonBody, JbhHttpHeaders headers) {
     return post(path, jsonBody, headers, defaultTimeout);
   }
@@ -144,6 +160,7 @@ public class JbhGatewayClientImpl implements AutoCloseable {
    * @return the HTTP response
    * @throws HttpClientException if the request fails
    */
+  @Override
   public JbhHttpResponse post(
       String path, String jsonBody, JbhHttpHeaders headers, Duration timeout) {
     JbhHttpRequest request =
@@ -167,8 +184,9 @@ public class JbhGatewayClientImpl implements AutoCloseable {
    * @return the HTTP response
    * @throws HttpClientException if the request fails
    */
+  @Override
   public JbhHttpResponse put(String path, String jsonBody) {
-    return put(path, jsonBody, JbhHttpHeaders.empty());
+    return put(path, jsonBody, defaultJbhHttpHeaders);
   }
 
   /**
@@ -180,6 +198,7 @@ public class JbhGatewayClientImpl implements AutoCloseable {
    * @return the HTTP response
    * @throws HttpClientException if the request fails
    */
+  @Override
   public JbhHttpResponse put(String path, String jsonBody, JbhHttpHeaders headers) {
     return put(path, jsonBody, headers, defaultTimeout);
   }
@@ -194,6 +213,7 @@ public class JbhGatewayClientImpl implements AutoCloseable {
    * @return the HTTP response
    * @throws HttpClientException if the request fails
    */
+  @Override
   public JbhHttpResponse put(
       String path, String jsonBody, JbhHttpHeaders headers, Duration timeout) {
     JbhHttpRequest request =
@@ -216,8 +236,9 @@ public class JbhGatewayClientImpl implements AutoCloseable {
    * @return the HTTP response
    * @throws HttpClientException if the request fails
    */
+  @Override
   public JbhHttpResponse delete(String path) {
-    return delete(path, JbhHttpHeaders.empty());
+    return delete(path, defaultJbhHttpHeaders);
   }
 
   /**
@@ -228,6 +249,7 @@ public class JbhGatewayClientImpl implements AutoCloseable {
    * @return the HTTP response
    * @throws HttpClientException if the request fails
    */
+  @Override
   public JbhHttpResponse delete(String path, JbhHttpHeaders headers) {
     return delete(path, headers, defaultTimeout);
   }
@@ -241,12 +263,89 @@ public class JbhGatewayClientImpl implements AutoCloseable {
    * @return the HTTP response
    * @throws HttpClientException if the request fails
    */
+  @Override
   public JbhHttpResponse delete(String path, JbhHttpHeaders headers, Duration timeout) {
     JbhHttpRequest request =
         JbhHttpRequest.delete(buildUrl(path)).headers(headers).timeout(timeout).build();
 
     log.debug("Executing DELETE request to: {}", request.getUri());
     return jbhHttpClientAdapter.execute(request);
+  }
+
+  // Typed GET request methods
+
+  /**
+   * Performs a GET request and deserializes the response body to the specified type.
+   *
+   * @param <T> the type to deserialize the response body to
+   * @param path the path to append to the base URL
+   * @param responseType the class of the response type
+   * @return the HTTP response with deserialized body
+   * @throws HttpClientException if the request fails
+   */
+  @Override
+  public <T> JbhHttpResponse getForObject(String path, Class<T> responseType) {
+    return getForObject(path, defaultJbhHttpHeaders, responseType);
+  }
+
+  /**
+   * Performs a GET request with custom headers and deserializes the response body to the specified type.
+   *
+   * @param <T> the type to deserialize the response body to
+   * @param path the path to append to the base URL
+   * @param headers additional headers to include in the request
+   * @param responseType the class of the response type
+   * @return the HTTP response with deserialized body
+   * @throws HttpClientException if the request fails
+   */
+  @Override
+  public <T> JbhHttpResponse getForObject(String path, JbhHttpHeaders headers, Class<T> responseType) {
+    JbhHttpRequest request =
+        JbhHttpRequest.get(buildUrl(path)).headers(headers).timeout(defaultTimeout).build();
+
+    log.debug("Executing typed GET request to: {} for type: {}", request.getUri(), responseType.getSimpleName());
+    return jbhHttpClientAdapter.executeForObject(request, responseType);
+  }
+
+  // Typed POST request methods
+
+  /**
+   * Performs a POST request with JSON body and deserializes the response body to the specified type.
+   *
+   * @param <T> the type to deserialize the response body to
+   * @param path the path to append to the base URL
+   * @param jsonBody the JSON request body
+   * @param responseType the class of the response type
+   * @return the HTTP response with deserialized body
+   * @throws HttpClientException if the request fails
+   */
+  @Override
+  public <T> JbhHttpResponse postForObject(String path, String jsonBody, Class<T> responseType) {
+    return postForObject(path, jsonBody, defaultJbhHttpHeaders, responseType);
+  }
+
+  /**
+   * Performs a POST request with JSON body and custom headers, deserializing the response body to the specified type.
+   *
+   * @param <T> the type to deserialize the response body to
+   * @param path the path to append to the base URL
+   * @param jsonBody the JSON request body
+   * @param headers additional headers to include in the request
+   * @param responseType the class of the response type
+   * @return the HTTP response with deserialized body
+   * @throws HttpClientException if the request fails
+   */
+  @Override
+  public <T> JbhHttpResponse postForObject(String path, String jsonBody, JbhHttpHeaders headers, Class<T> responseType) {
+    JbhHttpRequest request =
+        JbhHttpRequest.post(buildUrl(path))
+            .jsonBody(jsonBody)
+            .headers(headers)
+            .timeout(defaultTimeout)
+            .build();
+
+    log.debug("Executing typed POST request to: {} for type: {}", request.getUri(), responseType.getSimpleName());
+    return jbhHttpClientAdapter.executeForObject(request, responseType);
   }
 
   // Async methods
@@ -257,8 +356,9 @@ public class JbhGatewayClientImpl implements AutoCloseable {
    * @param path the path to append to the base URL
    * @return a CompletableFuture that will complete with the HTTP response
    */
+  @Override
   public CompletableFuture<JbhHttpResponse> getAsync(String path) {
-    return getAsync(path, JbhHttpHeaders.empty());
+    return getAsync(path, defaultJbhHttpHeaders);
   }
 
   /**
@@ -268,6 +368,7 @@ public class JbhGatewayClientImpl implements AutoCloseable {
    * @param headers additional headers to include in the request
    * @return a CompletableFuture that will complete with the HTTP response
    */
+  @Override
   public CompletableFuture<JbhHttpResponse> getAsync(String path, JbhHttpHeaders headers) {
     JbhHttpRequest request =
         JbhHttpRequest.get(buildUrl(path)).headers(headers).timeout(defaultTimeout).build();
@@ -283,8 +384,9 @@ public class JbhGatewayClientImpl implements AutoCloseable {
    * @param jsonBody the JSON request body
    * @return a CompletableFuture that will complete with the HTTP response
    */
+  @Override
   public CompletableFuture<JbhHttpResponse> postAsync(String path, String jsonBody) {
-    return postAsync(path, jsonBody, JbhHttpHeaders.empty());
+    return postAsync(path, jsonBody, defaultJbhHttpHeaders);
   }
 
   /**
@@ -295,6 +397,7 @@ public class JbhGatewayClientImpl implements AutoCloseable {
    * @param headers additional headers to include in the request
    * @return a CompletableFuture that will complete with the HTTP response
    */
+  @Override
   public CompletableFuture<JbhHttpResponse> postAsync(
       String path, String jsonBody, JbhHttpHeaders headers) {
     JbhHttpRequest request =
@@ -317,6 +420,7 @@ public class JbhGatewayClientImpl implements AutoCloseable {
    * @return the HTTP response
    * @throws HttpClientException if the request fails
    */
+  @Override
   public JbhHttpResponse execute(JbhHttpRequest request) {
     log.debug("Executing custom request: {} {}", request.getMethod(), request.getUri());
     return jbhHttpClientAdapter.execute(request);
@@ -328,9 +432,25 @@ public class JbhGatewayClientImpl implements AutoCloseable {
    * @param request the HTTP request to execute
    * @return a CompletableFuture that will complete with the HTTP response
    */
+  @Override
   public CompletableFuture<JbhHttpResponse> executeAsync(JbhHttpRequest request) {
     log.debug("Executing async custom request: {} {}", request.getMethod(), request.getUri());
     return jbhHttpClientAdapter.executeAsync(request);
+  }
+
+  /**
+   * Executes a custom HTTP request and deserializes the response body to the specified type.
+   *
+   * @param <T> the type to deserialize the response body to
+   * @param request the HTTP request to execute
+   * @param responseType the class of the response type
+   * @return the HTTP response with deserialized body
+   * @throws HttpClientException if the request fails
+   */
+  @Override
+  public <T> JbhHttpResponse executeForObject(JbhHttpRequest request, Class<T> responseType) {
+    log.debug("Executing typed custom request: {} {} for type: {}", request.getMethod(), request.getUri(), responseType.getSimpleName());
+    return jbhHttpClientAdapter.executeForObject(request, responseType);
   }
 
   /**
@@ -341,6 +461,7 @@ public class JbhGatewayClientImpl implements AutoCloseable {
    * @param path the path to append to the base URL
    * @return a request builder
    */
+  @Override
   public JbhHttpRequest.Builder request(JbhHttpMethod method, String path) {
     return JbhHttpRequest.builder().method(method).uri(buildUrl(path)).timeout(defaultTimeout);
   }
@@ -350,6 +471,7 @@ public class JbhGatewayClientImpl implements AutoCloseable {
    *
    * @return the base URL
    */
+  @Override
   public String getBaseUrl() {
     return baseUrl;
   }
@@ -359,6 +481,7 @@ public class JbhGatewayClientImpl implements AutoCloseable {
    *
    * @return the adapter name
    */
+  @Override
   public String getClientAdapterName() {
     return jbhHttpClientAdapter.getAdapterName();
   }
@@ -368,6 +491,7 @@ public class JbhGatewayClientImpl implements AutoCloseable {
    *
    * @return true if HTTP/2 is supported
    */
+  @Override
   public boolean supportsHttp2() {
     return jbhHttpClientAdapter.supportsHttp2();
   }

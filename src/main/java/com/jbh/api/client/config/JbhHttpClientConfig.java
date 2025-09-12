@@ -1,6 +1,8 @@
 package com.jbh.api.client.config;
 
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -21,6 +23,7 @@ public final class JbhHttpClientConfig {
     private final boolean enableCompression;
     private final Optional<String> userAgent;
     private final JbhRetryConfig retryConfig;
+    private final Map<String,String> customHeaders;
 
     private JbhHttpClientConfig(Builder builder) {
         this.connectTimeout = builder.connectTimeout;
@@ -33,6 +36,7 @@ public final class JbhHttpClientConfig {
         this.enableCompression = builder.enableCompression;
         this.userAgent = Optional.ofNullable(builder.userAgent);
         this.retryConfig = builder.retryConfig;
+        this.customHeaders = builder.customHeaders;
     }
 
     public static Builder builder() {
@@ -81,6 +85,10 @@ public final class JbhHttpClientConfig {
 
     public JbhRetryConfig getRetryConfig() {
         return retryConfig;
+    }
+
+    public Map<String,String> getCustomHeaders() {
+      return customHeaders;
     }
 
     @Override
@@ -134,6 +142,7 @@ public final class JbhHttpClientConfig {
         private boolean enableCompression = true;
         private String userAgent;
         private JbhRetryConfig retryConfig = JbhRetryConfig.defaultConfig();
+        private Map<String,String> customHeaders = new HashMap<>();
 
         public Builder connectTimeout(Duration connectTimeout) {
             this.connectTimeout = Objects.requireNonNull(connectTimeout, "Connect timeout cannot be null");
@@ -189,6 +198,16 @@ public final class JbhHttpClientConfig {
         public Builder retryConfig(JbhRetryConfig retryConfig) {
             this.retryConfig = Objects.requireNonNull(retryConfig, "Retry config cannot be null");
             return this;
+        }
+
+        public Builder addCustomHeader(String key, String value) {
+          customHeaders.put(key, value);
+          return this;
+        }
+
+        public Builder addCustomHeaders(Map<String,String> customHeaders) {
+          this.customHeaders.putAll(customHeaders);
+          return this;
         }
 
         public JbhHttpClientConfig build() {

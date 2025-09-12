@@ -1,3 +1,6 @@
+- Rename the file from MD to Java and test it if you want.
+- These testes were migrated to ClientIntegrationTest.java
+```java
 package com.jbh.api.client.integration;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -14,11 +17,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
-@Tag("integration")
-class JbhApiGatewayClientIntegrationTest {
+class ExampleUsingAdapterDirectly {
 
   private JbhHttpClientFactory factory;
 
@@ -240,3 +241,6 @@ class JbhApiGatewayClientIntegrationTest {
     }
   }
 }
+
+
+```

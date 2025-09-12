@@ -7,6 +7,9 @@ public class JbhGatewayHostConfig {
     this.baseUrl = builder.baseUrl;
   }
 
+  public String getBaseUrl() {
+    return baseUrl;
+  }
 
   public static Builder builder() {
     return new Builder();

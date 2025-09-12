@@ -7,7 +7,6 @@ public class JbhHttpValidatorImpl implements JbhHttpValidator{
 
   @Override
   public void validateAuthentication(JbhHttpHeaders headers) throws JbhApiException {
-
     headers.validateAuthHeader();
   }
 }
