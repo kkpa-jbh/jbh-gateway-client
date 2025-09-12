@@ -43,13 +43,14 @@
       <version>${jackson.version}</version>
     </dependency>
     
-    <!-- OkHttp for alternative HTTP client implementation -->
+    <!-- OkHttp for alternative HTTP client implementation
     <dependency>
       <groupId>com.squareup.okhttp3</groupId>
       <artifactId>okhttp</artifactId>
       <version>${okhttp.version}</version>
       <scope>provided</scope>
     </dependency>
+     -->
     
     <!-- Logging -->
     <dependency>
