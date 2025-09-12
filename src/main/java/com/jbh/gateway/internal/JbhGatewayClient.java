@@ -4,7 +4,7 @@ import com.jbh.gateway.internal.core.http.exception.HttpClientException;
 import com.jbh.gateway.internal.core.http.model.JbhHttpHeaders;
 import com.jbh.gateway.internal.core.http.model.JbhHttpMethod;
 import com.jbh.gateway.internal.core.http.model.JbhHttpRequest;
-import com.jbh.gateway.internal.core.http.model.JbhHttpResponse;
+import com.jbh.gateway.client.JbhHttpResponse;
 
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;

@@ -1,7 +1,7 @@
 package com.jbh.gateway.client;
 
-import com.jbh.gateway.client.users.JbhUserApiGatewayClient;
-import com.jbh.gateway.internal.domains.users.JbhUserApiGatewayClientImpl;
+import com.jbh.gateway.client.users.JbhUserGatewayClient;
+import com.jbh.gateway.internal.domains.users.JbhUserApiClientImpl;
 import java.time.Duration;
 
 public class JbhGatewayClient {
@@ -33,8 +33,8 @@ public class JbhGatewayClient {
     return requestTimeout;
   }
 
-  public JbhUserApiGatewayClient getUserClient() {
-    return new JbhUserApiGatewayClientImpl(this);
+  public JbhUserGatewayClient getUserClient() {
+    return new JbhUserApiClientImpl(this);
   }
 
   public static Builder builder() {

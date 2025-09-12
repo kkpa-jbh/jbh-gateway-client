@@ -9,7 +9,7 @@ import com.jbh.gateway.internal.core.http.exception.HttpConnectionException;
 import com.jbh.gateway.internal.core.http.exception.HttpTimeoutException;
 import com.jbh.gateway.internal.core.http.model.JbhHttpHeaders;
 import com.jbh.gateway.internal.core.http.model.JbhHttpRequest;
-import com.jbh.gateway.internal.core.http.model.JbhHttpResponse;
+import com.jbh.gateway.client.JbhHttpResponse;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.http.HttpClient;

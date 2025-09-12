@@ -1,8 +1,8 @@
 package com.jbh.gateway.internal.core;
 
 import com.jbh.gateway.client.JbhGatewayClient;
-import com.jbh.gateway.client.users.JbhUserApiGatewayClient;
-import com.jbh.gateway.internal.domains.users.JbhUserApiGatewayClientImpl;
+import com.jbh.gateway.client.users.JbhUserGatewayClient;
+import com.jbh.gateway.internal.domains.users.JbhUserApiClientImpl;
 
 /**
  * Factory for creating JBH API client instances.
@@ -24,10 +24,10 @@ public final class JbhGatewayClientFactory {
      * @return a new user API gateway client instance
      * @throws IllegalArgumentException if hostConfig is null
      */
-    public static JbhUserApiGatewayClient createUserApiClient(JbhGatewayClient hostConfig) {
+    public static JbhUserGatewayClient createUserApiClient(JbhGatewayClient hostConfig) {
         if (hostConfig == null) {
             throw new IllegalArgumentException("Host configuration cannot be null");
         }
-        return new JbhUserApiGatewayClientImpl(hostConfig);
+        return new JbhUserApiClientImpl(hostConfig);
     }
 }

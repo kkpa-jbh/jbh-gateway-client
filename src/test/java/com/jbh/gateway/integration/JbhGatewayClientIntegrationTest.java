@@ -9,7 +9,7 @@ import com.jbh.gateway.internal.config.JbhRetryConfig;
 import com.jbh.gateway.internal.core.http.AdapterType;
 import com.jbh.gateway.internal.core.http.model.JbhHttpHeaders;
 import com.jbh.gateway.internal.core.http.model.JbhHttpMethod;
-import com.jbh.gateway.internal.core.http.model.JbhHttpResponse;
+import com.jbh.gateway.client.JbhHttpResponse;
 import com.jbh.gateway.dto.TestUserDto;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;

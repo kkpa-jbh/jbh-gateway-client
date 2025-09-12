@@ -4,7 +4,7 @@ import com.jbh.gateway.internal.core.mappers.JacksonJsonUtil;
 import com.jbh.gateway.internal.core.http.JbhHttpClientAdapter;
 import com.jbh.gateway.internal.core.http.model.JbhHttpHeaders;
 import com.jbh.gateway.internal.core.http.model.JbhHttpRequest;
-import com.jbh.gateway.internal.core.http.model.JbhHttpResponse;
+import com.jbh.gateway.client.JbhHttpResponse;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;

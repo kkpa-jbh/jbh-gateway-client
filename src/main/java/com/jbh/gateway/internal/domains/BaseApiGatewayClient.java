@@ -7,7 +7,7 @@ import com.jbh.gateway.internal.JbhGatewayClientImpl;
 import com.jbh.gateway.internal.config.JbhHttpClientConfig;
 import com.jbh.gateway.internal.core.http.AdapterType;
 import com.jbh.gateway.internal.core.http.model.JbhHttpHeaders;
-import com.jbh.gateway.internal.core.http.model.JbhHttpResponse;
+import com.jbh.gateway.client.JbhHttpResponse;
 import com.jbh.gateway.internal.core.validators.JbhHttpValidator;
 import com.jbh.gateway.internal.core.validators.JbhHttpValidatorImpl;
 import java.util.HashMap;
@@ -17,7 +17,7 @@ public class BaseApiGatewayClient {
   protected final JbhHttpValidator validator;
   private final com.jbh.gateway.internal.JbhGatewayClient jbhGatewayClient;
   private final JbhGatewayClient gatewayConfig;
-  private static final String JBH_APIGATEWAY_PREFIX = "/jbh-api";
+  private static final String JBH_API_GATEWAY_PREFIX = "/jbh-api";
 
   public BaseApiGatewayClient(JbhGatewayClient gatewayConfig) {
     this(gatewayConfig, new JbhHttpValidatorImpl());
@@ -61,6 +61,6 @@ public class BaseApiGatewayClient {
   }
 
   protected JbhHttpResponse getCall(String path, JbhHttpHeaders headers) {
-    return jbhGatewayClient.get(JBH_APIGATEWAY_PREFIX + normalizePath(path), headers);
+    return jbhGatewayClient.get(JBH_API_GATEWAY_PREFIX + normalizePath(path), headers);
   }
 }

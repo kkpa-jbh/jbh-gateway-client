@@ -7,7 +7,7 @@ gateway-client as a standalone library project.
 
 ```java
 
-import users.domains.com.jbh.gateway.JbhUserApiGatewayClient
+import users.domains.com.jbh.gateway.JbhUserApiGatewayClient;
 import com.jbh.gateway.client.JbhGatewayClient;
 
 // Simple usage

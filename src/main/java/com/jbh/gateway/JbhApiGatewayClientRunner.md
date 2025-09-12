@@ -6,7 +6,7 @@ import com.jbh.gateway.internal.core.http.AdapterType;
 import com.jbh.gateway.internal.core.http.JbhHttpClientAdapter;
 import com.jbh.gateway.internal.core.http.JbhHttpClientFactory;
 import com.jbh.gateway.internal.core.http.model.JbhHttpRequest;
-import com.jbh.gateway.internal.core.http.model.JbhHttpResponse;
+import com.jbh.gateway.client.JbhHttpResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

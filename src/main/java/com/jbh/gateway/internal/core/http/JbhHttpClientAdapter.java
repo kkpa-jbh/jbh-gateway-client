@@ -2,7 +2,7 @@ package com.jbh.gateway.internal.core.http;
 
 import com.jbh.gateway.internal.core.http.exception.HttpClientException;
 import com.jbh.gateway.internal.core.http.model.JbhHttpRequest;
-import com.jbh.gateway.internal.core.http.model.JbhHttpResponse;
+import com.jbh.gateway.client.JbhHttpResponse;
 
 import java.util.concurrent.CompletableFuture;
 
