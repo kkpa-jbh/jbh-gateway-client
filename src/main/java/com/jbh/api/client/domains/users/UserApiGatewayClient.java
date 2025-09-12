@@ -1,6 +1,6 @@
 package com.jbh.api.client.domains.users;
 
-import com.jbh.api.client.vo.JbhApiException;
+import com.jbh.api.client.api.JbhApiException;
 import java.util.Map;
 
 public interface UserApiGatewayClient {

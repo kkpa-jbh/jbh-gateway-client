@@ -9,285 +9,321 @@ import com.jbh.api.client.core.http.exception.HttpTimeoutException;
 import com.jbh.api.client.core.http.model.JbhHttpHeaders;
 import com.jbh.api.client.core.http.model.JbhHttpRequest;
 import com.jbh.api.client.core.http.model.JbhHttpResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.io.IOException;
+import java.net.ConnectException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.net.ConnectException;
-import java.io.IOException;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * HTTP client adapter implementation using Java's native HTTP client (Java 11+).
- * Provides high-performance HTTP communication with full HTTP/2 support,
- * connection pooling, and comprehensive error handling.
+ * HTTP client adapter implementation using Java's native HTTP client (Java 11+). Provides
+ * high-performance HTTP communication with full HTTP/2 support, connection pooling, and
+ * comprehensive error handling.
  */
 public class NativeHttpClientAdapter implements JbhHttpClientAdapter {
 
-    private static final Logger log = LoggerFactory.getLogger(NativeHttpClientAdapter.class);
+  private static final Logger log = LoggerFactory.getLogger(NativeHttpClientAdapter.class);
 
-    private final HttpClient httpClient;
-    private final JbhHttpClientConfig config;
+  private final HttpClient httpClient;
+  private final JbhHttpClientConfig config;
 
-    public NativeHttpClientAdapter(JbhHttpClientConfig config) {
-        this.config = config;
-        this.httpClient = createHttpClient(config);
-        log.info("Initialized Native HTTP Client adapter with config: {}", config);
+  public NativeHttpClientAdapter(JbhHttpClientConfig config) {
+    this.config = config;
+    this.httpClient = createHttpClient(config);
+    log.info("Initialized Native HTTP Client adapter with config: {}", config);
+  }
+
+  public static NativeHttpClientAdapter create() {
+    return new NativeHttpClientAdapter(JbhHttpClientConfig.defaultConfig());
+  }
+
+  public static NativeHttpClientAdapter create(JbhHttpClientConfig config) {
+    return new NativeHttpClientAdapter(config);
+  }
+
+  @Override
+  public JbhHttpResponse execute(JbhHttpRequest request) {
+
+    log.debug("Executing synchronous request: {} {}", request.getMethod(), request.getUri());
+
+    try {
+      return executeWithRetry(request, config.getRetryConfig());
+    } catch (Exception e) {
+      throw mapException(e, request);
+    }
+  }
+
+  @Override
+  public CompletableFuture<JbhHttpResponse> executeAsync(JbhHttpRequest request) {
+
+    log.debug("Executing asynchronous request: {} {}", request.getMethod(), request.getUri());
+
+    return executeAsyncWithRetry(request, config.getRetryConfig())
+        .exceptionally(
+            throwable -> {
+              throw mapException(throwable, request);
+            });
+  }
+
+  @Override
+  public String getAdapterName() {
+    return "native";
+  }
+
+  @Override
+  public boolean supportsHttp2() {
+    return true;
+  }
+
+  @Override
+  public void close() {
+    log.debug("Closing Native HTTP Client adapter");
+    // Native HTTP client doesn't require explicit cleanup
+    // Connection pools are managed automatically by the JVM
+  }
+
+  private HttpClient createHttpClient(JbhHttpClientConfig config) {
+    HttpClient.Builder builder =
+        HttpClient.newBuilder()
+            .connectTimeout(config.getConnectTimeout())
+            .followRedirects(
+                config.isFollowRedirects()
+                    ? HttpClient.Redirect.NORMAL
+                    : HttpClient.Redirect.NEVER);
+
+    if (config.isEnableHttp2()) {
+      builder.version(HttpClient.Version.HTTP_2);
+    } else {
+      builder.version(HttpClient.Version.HTTP_1_1);
     }
 
-    public static NativeHttpClientAdapter create() {
-        return new NativeHttpClientAdapter(JbhHttpClientConfig.defaultConfig());
+    // Use virtual threads executor if available (Java 21+)
+    try {
+      // Use reflection to check for virtual thread support
+      Class<?> threadClass = Thread.class;
+      var method = threadClass.getMethod("ofVirtual");
+      var virtualThreadBuilder = method.invoke(null);
+      var factory =
+          virtualThreadBuilder.getClass().getMethod("factory").invoke(virtualThreadBuilder);
+
+      Executor virtualThreadExecutor =
+          (Executor)
+              factory
+                  .getClass()
+                  .getMethod("newThread", Runnable.class)
+                  .invoke(factory, (Runnable) () -> {});
+
+      // This is a simplified approach - in real implementation you'd create a proper executor
+      log.debug("Virtual threads are available but not configured in this example");
+    } catch (Exception e) {
+      log.debug("Virtual threads not available, using default executor");
     }
 
-    public static NativeHttpClientAdapter create(JbhHttpClientConfig config) {
-        return new NativeHttpClientAdapter(config);
-    }
+    return builder.build();
+  }
 
-    @Override
-    public JbhHttpResponse execute(
-            JbhHttpRequest request) {
-        
-        log.debug("Executing synchronous request: {} {}", request.getMethod(), request.getUri());
-        
-        try {
-            return executeWithRetry(request, config.getRetryConfig());
-        } catch (Exception e) {
-            throw mapException(e, request);
+  private JbhHttpResponse executeWithRetry(JbhHttpRequest request, JbhRetryConfig retryConfig) {
+
+    Exception lastException = null;
+
+    for (int attempt = 1; attempt <= retryConfig.getMaxAttempts(); attempt++) {
+      try {
+        if (attempt > 1) {
+          Duration delay = retryConfig.calculateDelay(attempt);
+          log.debug(
+              "Retrying request (attempt {}/{}) after {} ms delay",
+              attempt,
+              retryConfig.getMaxAttempts(),
+              delay.toMillis());
+          Thread.sleep(delay.toMillis());
         }
-    }
 
-    @Override
-    public CompletableFuture<JbhHttpResponse> executeAsync(
-            JbhHttpRequest request) {
-        
-        log.debug("Executing asynchronous request: {} {}", request.getMethod(), request.getUri());
-        
-        return executeAsyncWithRetry(request, config.getRetryConfig())
-                .exceptionally(throwable -> {
-                    throw mapException(throwable, request);
-                });
-    }
+        HttpRequest nativeRequest = convertRequest(request);
+        HttpResponse<String> nativeResponse =
+            httpClient.send(nativeRequest, HttpResponse.BodyHandlers.ofString());
 
-    @Override
-    public String getAdapterName() {
-        return "native";
-    }
+        JbhHttpResponse response = convertResponse(nativeResponse);
 
-    @Override
-    public boolean supportsHttp2() {
-        return true;
-    }
-
-    @Override
-    public void close() {
-        log.debug("Closing Native HTTP Client adapter");
-        // Native HTTP client doesn't require explicit cleanup
-        // Connection pools are managed automatically by the JVM
-    }
-
-    private HttpClient createHttpClient(JbhHttpClientConfig config) {
-        HttpClient.Builder builder = HttpClient.newBuilder()
-                .connectTimeout(config.getConnectTimeout())
-                .followRedirects(config.isFollowRedirects() ? 
-                        HttpClient.Redirect.NORMAL : HttpClient.Redirect.NEVER);
-
-        if (config.isEnableHttp2()) {
-            builder.version(HttpClient.Version.HTTP_2);
-        } else {
-            builder.version(HttpClient.Version.HTTP_1_1);
+        // Check if we should retry based on status code
+        if (attempt < retryConfig.getMaxAttempts()
+            && retryConfig.shouldRetryForStatusCode(response.getStatusCode())) {
+          log.debug(
+              "Received retryable status code {} for attempt {}/{}",
+              response.getStatusCode(),
+              attempt,
+              retryConfig.getMaxAttempts());
+          continue;
         }
 
-        // Use virtual threads executor if available (Java 21+)
-        try {
-            // Use reflection to check for virtual thread support
-            Class<?> threadClass = Thread.class;
-            var method = threadClass.getMethod("ofVirtual");
-            var virtualThreadBuilder = method.invoke(null);
-            var factory = virtualThreadBuilder.getClass().getMethod("factory").invoke(virtualThreadBuilder);
-            
-            Executor virtualThreadExecutor = (Executor) factory.getClass()
-                    .getMethod("newThread", Runnable.class)
-                    .invoke(factory, (Runnable) () -> {});
-                    
-            // This is a simplified approach - in real implementation you'd create a proper executor
-            log.debug("Virtual threads are available but not configured in this example");
-        } catch (Exception e) {
-            log.debug("Virtual threads not available, using default executor");
+        log.debug(
+            "Request completed successfully on attempt {}/{} with status {}",
+            attempt,
+            retryConfig.getMaxAttempts(),
+            response.getStatusCode());
+        return response;
+
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        throw new HttpClientException("Request was interrupted", e);
+      } catch (Exception e) {
+        lastException = e;
+
+        if (attempt >= retryConfig.getMaxAttempts() || !retryConfig.shouldRetryForException(e)) {
+          break;
         }
 
-        return builder.build();
+        log.debug(
+            "Request failed on attempt {}/{}, will retry: {}",
+            attempt,
+            retryConfig.getMaxAttempts(),
+            e.getMessage());
+      }
     }
 
-    private JbhHttpResponse executeWithRetry(
-            JbhHttpRequest request, JbhRetryConfig retryConfig) {
-        
-        Exception lastException = null;
-        
-        for (int attempt = 1; attempt <= retryConfig.getMaxAttempts(); attempt++) {
-            try {
-                if (attempt > 1) {
-                    Duration delay = retryConfig.calculateDelay(attempt);
-                    log.debug("Retrying request (attempt {}/{}) after {} ms delay", 
-                            attempt, retryConfig.getMaxAttempts(), delay.toMillis());
-                    Thread.sleep(delay.toMillis());
-                }
+    throw mapException(lastException, request);
+  }
 
-                HttpRequest nativeRequest = convertRequest(request);
-                HttpResponse<String> nativeResponse = httpClient.send(nativeRequest, 
-                        HttpResponse.BodyHandlers.ofString());
-                
-                JbhHttpResponse response = convertResponse(nativeResponse);
-                
+  private CompletableFuture<JbhHttpResponse> executeAsyncWithRetry(
+      JbhHttpRequest request, JbhRetryConfig retryConfig) {
+
+    return executeAsyncWithRetryInternal(request, retryConfig, 1);
+  }
+
+  private CompletableFuture<JbhHttpResponse> executeAsyncWithRetryInternal(
+      JbhHttpRequest request, JbhRetryConfig retryConfig, int attempt) {
+
+    try {
+      HttpRequest nativeRequest = convertRequest(request);
+
+      return httpClient
+          .sendAsync(nativeRequest, HttpResponse.BodyHandlers.ofString())
+          .thenApply(this::convertResponse)
+          .thenCompose(
+              response -> {
                 // Check if we should retry based on status code
-                if (attempt < retryConfig.getMaxAttempts() && 
-                    retryConfig.shouldRetryForStatusCode(response.getStatusCode())) {
-                    log.debug("Received retryable status code {} for attempt {}/{}", 
-                            response.getStatusCode(), attempt, retryConfig.getMaxAttempts());
-                    continue;
+                if (attempt < retryConfig.getMaxAttempts()
+                    && retryConfig.shouldRetryForStatusCode(response.getStatusCode())) {
+
+                  Duration delay = retryConfig.calculateDelay(attempt + 1);
+                  log.debug(
+                      "Received retryable status code {} for async attempt {}/{}, retrying after {} ms",
+                      response.getStatusCode(),
+                      attempt,
+                      retryConfig.getMaxAttempts(),
+                      delay.toMillis());
+
+                  CompletableFuture<Void> delayFuture = new CompletableFuture<>();
+                  java.util.concurrent.Executors.newSingleThreadScheduledExecutor()
+                      .schedule(
+                          () -> delayFuture.complete(null),
+                          delay.toNanos(),
+                          java.util.concurrent.TimeUnit.NANOSECONDS);
+                  return delayFuture.thenCompose(
+                      v -> executeAsyncWithRetryInternal(request, retryConfig, attempt + 1));
                 }
-                
-                log.debug("Request completed successfully on attempt {}/{} with status {}", 
-                        attempt, retryConfig.getMaxAttempts(), response.getStatusCode());
-                return response;
-                
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new HttpClientException("Request was interrupted", e);
-            } catch (Exception e) {
-                lastException = e;
-                
-                if (attempt >= retryConfig.getMaxAttempts() || 
-                    !retryConfig.shouldRetryForException(e)) {
-                    break;
+
+                return CompletableFuture.completedFuture(response);
+              })
+          .exceptionally(
+              throwable -> {
+                if (attempt < retryConfig.getMaxAttempts()
+                    && retryConfig.shouldRetryForException(throwable)) {
+
+                  Duration delay = retryConfig.calculateDelay(attempt + 1);
+                  log.debug(
+                      "Async request failed on attempt {}/{}, retrying after {} ms: {}",
+                      attempt,
+                      retryConfig.getMaxAttempts(),
+                      delay.toMillis(),
+                      throwable.getMessage());
+
+                  CompletableFuture<Void> delayFuture = new CompletableFuture<>();
+                  java.util.concurrent.Executors.newSingleThreadScheduledExecutor()
+                      .schedule(
+                          () -> delayFuture.complete(null),
+                          delay.toNanos(),
+                          java.util.concurrent.TimeUnit.NANOSECONDS);
+                  return delayFuture
+                      .thenCompose(
+                          v -> executeAsyncWithRetryInternal(request, retryConfig, attempt + 1))
+                      .join();
                 }
-                
-                log.debug("Request failed on attempt {}/{}, will retry: {}", 
-                        attempt, retryConfig.getMaxAttempts(), e.getMessage());
-            }
-        }
-        
-        throw mapException(lastException, request);
+
+                throw mapException(throwable, request);
+              });
+
+    } catch (Exception e) {
+      return CompletableFuture.failedFuture(mapException(e, request));
+    }
+  }
+
+  private HttpRequest convertRequest(JbhHttpRequest request) {
+    HttpRequest.Builder builder =
+        HttpRequest.newBuilder().uri(request.getUri()).timeout(request.getTimeout());
+
+    // Add headers
+    request
+        .getHeaders()
+        .asMap()
+        .forEach((name, values) -> values.forEach(value -> builder.header(name, value)));
+
+    // Set method and body
+    HttpRequest.BodyPublisher bodyPublisher =
+        request
+            .getBody()
+            .map(HttpRequest.BodyPublishers::ofString)
+            .orElse(HttpRequest.BodyPublishers.noBody());
+
+    switch (request.getMethod()) {
+      case GET -> builder.GET();
+      case POST -> builder.POST(bodyPublisher);
+      case PUT -> builder.PUT(bodyPublisher);
+      case DELETE -> builder.DELETE();
+      case PATCH -> builder.method("PATCH", bodyPublisher);
+      case HEAD -> builder.method("HEAD", HttpRequest.BodyPublishers.noBody());
+      case OPTIONS -> builder.method("OPTIONS", HttpRequest.BodyPublishers.noBody());
+      default ->
+          throw new IllegalArgumentException("Unsupported HTTP method: " + request.getMethod());
     }
 
-    private CompletableFuture<JbhHttpResponse> executeAsyncWithRetry(
-            JbhHttpRequest request, JbhRetryConfig retryConfig) {
-        
-        return executeAsyncWithRetryInternal(request, retryConfig, 1);
+    return builder.build();
+  }
+
+  private JbhHttpResponse convertResponse(HttpResponse<String> nativeResponse) {
+    JbhHttpHeaders.Builder headersBuilder = JbhHttpHeaders.builder();
+    nativeResponse
+        .headers()
+        .map()
+        .forEach((name, values) -> values.forEach(value -> headersBuilder.add(name, value)));
+
+    return JbhHttpResponse.of(
+        nativeResponse.statusCode(), headersBuilder.build(), nativeResponse.body());
+  }
+
+  private RuntimeException mapException(Throwable throwable, JbhHttpRequest request) {
+    if (throwable instanceof RuntimeException runtimeException) {
+      return runtimeException;
     }
 
-    private CompletableFuture<JbhHttpResponse> executeAsyncWithRetryInternal(
-            JbhHttpRequest request, JbhRetryConfig retryConfig, int attempt) {
-        
-        try {
-            HttpRequest nativeRequest = convertRequest(request);
-            
-            return httpClient.sendAsync(nativeRequest, HttpResponse.BodyHandlers.ofString())
-                    .thenApply(this::convertResponse)
-                    .thenCompose(response -> {
-                        // Check if we should retry based on status code
-                        if (attempt < retryConfig.getMaxAttempts() && 
-                            retryConfig.shouldRetryForStatusCode(response.getStatusCode())) {
-                            
-                            Duration delay = retryConfig.calculateDelay(attempt + 1);
-                            log.debug("Received retryable status code {} for async attempt {}/{}, retrying after {} ms", 
-                                    response.getStatusCode(), attempt, retryConfig.getMaxAttempts(), delay.toMillis());
-                            
-                            CompletableFuture<Void> delayFuture = new CompletableFuture<>();
-                            java.util.concurrent.Executors.newSingleThreadScheduledExecutor()
-                                    .schedule(() -> delayFuture.complete(null), delay.toNanos(), 
-                                            java.util.concurrent.TimeUnit.NANOSECONDS);
-                            return delayFuture.thenCompose(v -> executeAsyncWithRetryInternal(request, retryConfig, attempt + 1));
-                        }
-                        
-                        return CompletableFuture.completedFuture(response);
-                    })
-                    .exceptionally(throwable -> {
-                        if (attempt < retryConfig.getMaxAttempts() && 
-                            retryConfig.shouldRetryForException(throwable)) {
-                            
-                            Duration delay = retryConfig.calculateDelay(attempt + 1);
-                            log.debug("Async request failed on attempt {}/{}, retrying after {} ms: {}", 
-                                    attempt, retryConfig.getMaxAttempts(), delay.toMillis(), throwable.getMessage());
-                            
-                            CompletableFuture<Void> delayFuture = new CompletableFuture<>();
-                            java.util.concurrent.Executors.newSingleThreadScheduledExecutor()
-                                    .schedule(() -> delayFuture.complete(null), delay.toNanos(), 
-                                            java.util.concurrent.TimeUnit.NANOSECONDS);
-                            return delayFuture.thenCompose(v -> executeAsyncWithRetryInternal(request, retryConfig, attempt + 1))
-                                    .join();
-                        }
-                        
-                        throw mapException(throwable, request);
-                    });
-                    
-        } catch (Exception e) {
-            return CompletableFuture.failedFuture(mapException(e, request));
-        }
+    String requestInfo = String.format("%s %s", request.getMethod(), request.getUri());
+
+    if (throwable instanceof java.net.http.HttpTimeoutException) {
+      return new HttpTimeoutException(
+          "Request timeout for " + requestInfo, request.getTimeout().toMillis(), throwable);
+    } else if (throwable instanceof ConnectException) {
+      return new HttpConnectionException(
+          "Connection failed for " + requestInfo, request.getUri().getHost(), throwable);
+    } else if (throwable instanceof IOException) {
+      return new HttpClientException(
+          "IO error during request to " + requestInfo, "IO_ERROR", null, throwable);
+    } else {
+      return new HttpClientException(
+          "Unexpected error during request to " + requestInfo, "UNKNOWN_ERROR", null, throwable);
     }
-
-    private HttpRequest convertRequest(JbhHttpRequest request) {
-        HttpRequest.Builder builder = HttpRequest.newBuilder()
-                .uri(request.getUri())
-                .timeout(request.getTimeout());
-
-        // Add headers
-        request.getHeaders().asMap().forEach((name, values) -> 
-                values.forEach(value -> builder.header(name, value)));
-
-        // Set method and body
-        HttpRequest.BodyPublisher bodyPublisher = request.getBody()
-                .map(HttpRequest.BodyPublishers::ofString)
-                .orElse(HttpRequest.BodyPublishers.noBody());
-
-        switch (request.getMethod()) {
-            case GET -> builder.GET();
-            case POST -> builder.POST(bodyPublisher);
-            case PUT -> builder.PUT(bodyPublisher);
-            case DELETE -> builder.DELETE();
-            case PATCH -> builder.method("PATCH", bodyPublisher);
-            case HEAD -> builder.method("HEAD", HttpRequest.BodyPublishers.noBody());
-            case OPTIONS -> builder.method("OPTIONS", HttpRequest.BodyPublishers.noBody());
-            default -> throw new IllegalArgumentException("Unsupported HTTP method: " + request.getMethod());
-        }
-
-        return builder.build();
-    }
-
-    private JbhHttpResponse convertResponse(HttpResponse<String> nativeResponse) {
-        JbhHttpHeaders.Builder headersBuilder = JbhHttpHeaders.builder();
-        nativeResponse.headers().map().forEach((name, values) -> 
-                values.forEach(value -> headersBuilder.add(name, value)));
-
-        return JbhHttpResponse.of(
-                nativeResponse.statusCode(),
-                headersBuilder.build(),
-                nativeResponse.body()
-        );
-    }
-
-    private RuntimeException mapException(Throwable throwable, JbhHttpRequest request) {
-        if (throwable instanceof RuntimeException runtimeException) {
-            return runtimeException;
-        }
-
-        String requestInfo = String.format("%s %s", request.getMethod(), request.getUri());
-
-        if (throwable instanceof java.net.http.HttpTimeoutException) {
-            return new HttpTimeoutException("Request timeout for " + requestInfo,
-                    request.getTimeout().toMillis(), throwable);
-        } else if (throwable instanceof ConnectException) {
-            return new HttpConnectionException("Connection failed for " + requestInfo,
-                    request.getUri().getHost(), throwable);
-        } else if (throwable instanceof IOException) {
-            return new HttpClientException("IO error during request to " + requestInfo, 
-                    "IO_ERROR", null, throwable);
-        } else {
-            return new HttpClientException("Unexpected error during request to " + requestInfo, 
-                    "UNKNOWN_ERROR", null, throwable);
-        }
-    }
+  }
 }

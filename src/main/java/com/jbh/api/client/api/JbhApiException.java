@@ -1,4 +1,4 @@
-package com.jbh.api.client.vo;
+package com.jbh.api.client.api;
 
 public class JbhApiException extends Exception {
 

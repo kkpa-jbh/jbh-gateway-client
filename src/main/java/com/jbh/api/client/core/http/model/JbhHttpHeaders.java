@@ -1,7 +1,7 @@
 package com.jbh.api.client.core.http.model;
 
-import com.jbh.api.client.vo.JbhApiException;
-import com.jbh.api.client.vo.JbhHttpHeaderNames;
+import com.jbh.api.client.api.JbhApiException;
+import com.jbh.api.client.api.JbhHttpHeaderNames;
 import java.util.*;
 
 /**

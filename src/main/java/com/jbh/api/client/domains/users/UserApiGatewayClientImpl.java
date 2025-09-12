@@ -1,18 +1,17 @@
 package com.jbh.api.client.domains.users;
 
+import com.jbh.api.client.api.JbhGatewayHostConfig;
 import com.jbh.api.client.core.JbhHttpValidator;
 import com.jbh.api.client.core.http.model.JbhHttpHeaders;
-import com.jbh.api.client.vo.JbhApiException;
+import com.jbh.api.client.api.JbhApiException;
 import java.util.Map;
 
-public class UserApiGatewayClientImpl implements UserApiGatewayClient{
-
-  private final JbhHttpValidator validator;
+public class UserApiGatewayClientImpl extends BaseApiGatewayClient implements UserApiGatewayClient{
 
   private final static String FIND_USER_ID_PATH = "/users/find-user-id";
 
-  public UserApiGatewayClientImpl(final JbhHttpValidator validator) {
-    this.validator = validator;
+  public UserApiGatewayClientImpl(final JbhGatewayHostConfig hostConfig) {
+   super(hostConfig);
   }
 
   @Override

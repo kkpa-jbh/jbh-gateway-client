@@ -2,6 +2,7 @@ package com.jbh.api.client;
 
 import com.jbh.api.client.config.JbhHttpClientConfig;
 import com.jbh.api.client.config.JbhRetryConfig;
+import com.jbh.api.client.core.http.AdapterType;
 import com.jbh.api.client.core.http.JbhHttpClientAdapter;
 import com.jbh.api.client.core.http.JbhHttpClientFactory;
 import com.jbh.api.client.core.http.model.JbhHttpRequest;
@@ -48,7 +49,7 @@ public class JbhApiGatewayClientRunner {
         log.info("=== Demonstrating Basic HTTP Client Adapter Usage ===");
         
         // Create adapter with default configuration
-        JbhHttpClientAdapter adapter = factory.createAdapter("native");
+        JbhHttpClientAdapter adapter = factory.createAdapter(AdapterType.NATIVE);
         
         try {
             // Create a simple GET request
@@ -94,7 +95,7 @@ public class JbhApiGatewayClientRunner {
         log.info("Created custom configuration: {}", customConfig);
         
         // Create adapter with custom configuration
-        JbhHttpClientAdapter adapter = factory.createAdapter("native", customConfig);
+        JbhHttpClientAdapter adapter = factory.createAdapter(AdapterType.NATIVE, customConfig);
         
         try {
             // Test POST request with JSON body
@@ -125,7 +126,7 @@ public class JbhApiGatewayClientRunner {
     private static void demonstrateAsyncRequests(JbhHttpClientFactory factory) {
         log.info("=== Demonstrating Asynchronous Requests ===");
         
-        JbhHttpClientAdapter adapter = factory.getOrCreateAdapter("native");
+        JbhHttpClientAdapter adapter = factory.getOrCreateAdapter(AdapterType.NATIVE);
         
         try {
             // Create multiple requests
@@ -165,7 +166,7 @@ public class JbhApiGatewayClientRunner {
     private static void demonstrateErrorHandling(JbhHttpClientFactory factory) {
         log.info("=== Demonstrating Error Handling ===");
         
-        JbhHttpClientAdapter adapter = factory.getOrCreateAdapter("native");
+        JbhHttpClientAdapter adapter = factory.getOrCreateAdapter(AdapterType.NATIVE);
         
         // Test various error scenarios
         testErrorScenario(adapter, "https://httpbin.org/status/404", "404 Not Found");

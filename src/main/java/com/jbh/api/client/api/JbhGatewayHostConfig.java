@@ -1,4 +1,4 @@
-package com.jbh.api.client.config;
+package com.jbh.api.client.api;
 
 public class JbhGatewayHostConfig {
   private final String baseUrl;

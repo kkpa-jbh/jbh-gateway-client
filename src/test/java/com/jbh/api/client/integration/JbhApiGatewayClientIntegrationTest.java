@@ -2,6 +2,7 @@ package com.jbh.api.client.integration;
 
 import com.jbh.api.client.config.JbhHttpClientConfig;
 import com.jbh.api.client.config.JbhRetryConfig;
+import com.jbh.api.client.core.http.AdapterType;
 import com.jbh.api.client.core.http.JbhHttpClientAdapter;
 import com.jbh.api.client.core.http.JbhHttpClientFactory;
 import com.jbh.api.client.core.http.model.JbhHttpRequest;
@@ -36,7 +37,7 @@ class JbhApiGatewayClientIntegrationTest {
 
     @Test
     void testBasicGetRequest() {
-        JbhHttpClientAdapter adapter = factory.createAdapter("native");
+        JbhHttpClientAdapter adapter = factory.createAdapter(AdapterType.NATIVE);
         
         try {
             JbhHttpRequest request = JbhHttpRequest.get("https://httpbin.org/get")
@@ -77,7 +78,7 @@ class JbhApiGatewayClientIntegrationTest {
                         .build())
                 .build();
         
-        JbhHttpClientAdapter adapter = factory.createAdapter("native", customConfig);
+        JbhHttpClientAdapter adapter = factory.createAdapter(AdapterType.NATIVE, customConfig);
         
         try {
             String jsonBody = "{\"message\":\"Hello from JBH Gateway Client\",\"timestamp\":\"" + 
@@ -111,7 +112,7 @@ class JbhApiGatewayClientIntegrationTest {
 
     @Test
     void testAsynchronousRequests() throws Exception {
-        JbhHttpClientAdapter adapter = factory.getOrCreateAdapter("native");
+        JbhHttpClientAdapter adapter = factory.getOrCreateAdapter(AdapterType.NATIVE);
         
         JbhHttpRequest[] requests = {
             JbhHttpRequest.get("https://httpbin.org/delay/1").build(),
@@ -148,7 +149,7 @@ class JbhApiGatewayClientIntegrationTest {
 
     @Test
     void testErrorHandling404() {
-        JbhHttpClientAdapter adapter = factory.getOrCreateAdapter("native");
+        JbhHttpClientAdapter adapter = factory.getOrCreateAdapter(AdapterType.NATIVE);
         
         JbhHttpRequest request = JbhHttpRequest.get("https://httpbin.org/status/404").build();
         
@@ -165,7 +166,7 @@ class JbhApiGatewayClientIntegrationTest {
 
     @Test
     void testErrorHandling500() {
-        JbhHttpClientAdapter adapter = factory.getOrCreateAdapter("native");
+        JbhHttpClientAdapter adapter = factory.getOrCreateAdapter(AdapterType.NATIVE);
         
         JbhHttpRequest request = JbhHttpRequest.get("https://httpbin.org/status/500").build();
         
@@ -182,7 +183,7 @@ class JbhApiGatewayClientIntegrationTest {
 
     @Test
     void testConnectionError() {
-        JbhHttpClientAdapter adapter = factory.getOrCreateAdapter("native");
+        JbhHttpClientAdapter adapter = factory.getOrCreateAdapter(AdapterType.NATIVE);
         
         JbhHttpRequest request = JbhHttpRequest.get("https://invalid-domain-that-does-not-exist-12345.com")
                 .timeout(Duration.ofSeconds(5))
@@ -195,7 +196,7 @@ class JbhApiGatewayClientIntegrationTest {
 
     @Test
     void testTimeoutError() {
-        JbhHttpClientAdapter adapter = factory.getOrCreateAdapter("native");
+        JbhHttpClientAdapter adapter = factory.getOrCreateAdapter(AdapterType.NATIVE);
         
         JbhHttpRequest timeoutRequest = JbhHttpRequest.get("https://httpbin.org/delay/10")
                 .timeout(Duration.ofSeconds(2))
@@ -208,7 +209,7 @@ class JbhApiGatewayClientIntegrationTest {
 
     @Test
     void testAsyncErrorHandling() throws Exception {
-        JbhHttpClientAdapter adapter = factory.getOrCreateAdapter("native");
+        JbhHttpClientAdapter adapter = factory.getOrCreateAdapter(AdapterType.NATIVE);
         
         JbhHttpRequest request = JbhHttpRequest.get("https://invalid-domain-async-test-12345.com")
                 .timeout(Duration.ofSeconds(3))

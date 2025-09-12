@@ -18,7 +18,7 @@ public class JbhHttpClientFactory {
 
     private static final Logger log = LoggerFactory.getLogger(JbhHttpClientFactory.class);
 
-    private final Map<String, Function<JbhHttpClientConfig, JbhHttpClientAdapter>> adapterFactories;
+    private final Map<AdapterType, Function<JbhHttpClientConfig, JbhHttpClientAdapter>> adapterFactories;
     private final Map<String, JbhHttpClientAdapter> adapterCache;
     private final JbhHttpClientConfig defaultConfig;
 
@@ -37,11 +37,11 @@ public class JbhHttpClientFactory {
     /**
      * Create an HTTP client adapter with the default configuration.
      * 
-     * @param adapterType the type of adapter to create (e.g., "native", "okhttp")
+     * @param adapterType the type of adapter to create
      * @return the HTTP client adapter instance
      * @throws IllegalArgumentException if the adapter type is not supported
      */
-    public JbhHttpClientAdapter createAdapter(String adapterType) {
+    public JbhHttpClientAdapter createAdapter(AdapterType adapterType) {
         return createAdapter(adapterType, defaultConfig);
     }
 
@@ -53,8 +53,8 @@ public class JbhHttpClientFactory {
      * @return the HTTP client adapter instance
      * @throws IllegalArgumentException if the adapter type is not supported
      */
-    public JbhHttpClientAdapter createAdapter(String adapterType, JbhHttpClientConfig config) {
-        Function<JbhHttpClientConfig, JbhHttpClientAdapter> factory = adapterFactories.get(adapterType.toLowerCase());
+    public JbhHttpClientAdapter createAdapter(AdapterType adapterType, JbhHttpClientConfig config) {
+        Function<JbhHttpClientConfig, JbhHttpClientAdapter> factory = adapterFactories.get(adapterType);
         if (factory == null) {
             throw new IllegalArgumentException("Unsupported HTTP client adapter type: " + adapterType + 
                     ". Supported types: " + getSupportedAdapterTypes());
@@ -72,7 +72,7 @@ public class JbhHttpClientFactory {
      * @param adapterType the type of adapter to get or create
      * @return the cached HTTP client adapter instance
      */
-    public JbhHttpClientAdapter getOrCreateAdapter(String adapterType) {
+    public JbhHttpClientAdapter getOrCreateAdapter(AdapterType adapterType) {
         return getOrCreateAdapter(adapterType, defaultConfig);
     }
 
@@ -84,8 +84,8 @@ public class JbhHttpClientFactory {
      * @param config the configuration to use
      * @return the cached HTTP client adapter instance
      */
-    public JbhHttpClientAdapter getOrCreateAdapter(String adapterType, JbhHttpClientConfig config) {
-        String cacheKey = adapterType.toLowerCase() + "_" + config.hashCode();
+    public JbhHttpClientAdapter getOrCreateAdapter(AdapterType adapterType, JbhHttpClientConfig config) {
+        String cacheKey = adapterType.getValue() + "_" + config.hashCode();
         
         return adapterCache.computeIfAbsent(cacheKey, key -> {
             log.debug("Creating new cached adapter for key: {}", key);
@@ -97,20 +97,20 @@ public class JbhHttpClientFactory {
      * Register a custom HTTP client adapter factory.
      * This allows for extending the factory with new adapter implementations.
      * 
-     * @param adapterType the type name for the adapter
+     * @param adapterType the type for the adapter
      * @param factory the factory function that creates adapter instances
      */
-    public void registerAdapter(String adapterType, Function<JbhHttpClientConfig, JbhHttpClientAdapter> factory) {
-        adapterFactories.put(adapterType.toLowerCase(), factory);
+    public void registerAdapter(AdapterType adapterType, Function<JbhHttpClientConfig, JbhHttpClientAdapter> factory) {
+        adapterFactories.put(adapterType, factory);
         log.info("Registered HTTP client adapter factory for type: {}", adapterType);
     }
 
     /**
      * Get the list of supported adapter types.
      * 
-     * @return set of supported adapter type names
+     * @return set of supported adapter types
      */
-    public java.util.Set<String> getSupportedAdapterTypes() {
+    public java.util.Set<AdapterType> getSupportedAdapterTypes() {
         return adapterFactories.keySet();
     }
 
@@ -138,8 +138,8 @@ public class JbhHttpClientFactory {
      * @param adapterType the type of adapter to remove
      * @param config the configuration used for the adapter
      */
-    public void evictFromCache(String adapterType, JbhHttpClientConfig config) {
-        String cacheKey = adapterType.toLowerCase() + "_" + config.hashCode();
+    public void evictFromCache(AdapterType adapterType, JbhHttpClientConfig config) {
+        String cacheKey = adapterType.getValue() + "_" + config.hashCode();
         JbhHttpClientAdapter adapter = adapterCache.remove(cacheKey);
         
         if (adapter != null) {
@@ -154,7 +154,7 @@ public class JbhHttpClientFactory {
 
     private void registerDefaultAdapters() {
         // Register Native Java HTTP Client adapter
-        registerAdapter("native", NativeHttpClientAdapter::new);
+        registerAdapter(AdapterType.NATIVE, NativeHttpClientAdapter::new);
         
         // Register OkHttp adapter if available on classpath
         try {

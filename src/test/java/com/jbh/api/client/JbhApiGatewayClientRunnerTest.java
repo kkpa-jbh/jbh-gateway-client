@@ -2,6 +2,7 @@ package com.jbh.api.client;
 
 import com.jbh.api.client.config.JbhHttpClientConfig;
 import com.jbh.api.client.config.JbhRetryConfig;
+import com.jbh.api.client.core.http.AdapterType;
 import com.jbh.api.client.core.http.JbhHttpClientAdapter;
 import com.jbh.api.client.core.http.JbhHttpClientFactory;
 import com.jbh.api.client.http.MockHttpClientAdapter;
@@ -27,7 +28,7 @@ class JbhApiGatewayClientRunnerTest {
     void setUp() {
         factory = JbhHttpClientFactory.createDefault();
         mockAdapter = new MockHttpClientAdapter();
-        factory.registerAdapter("mock", config -> mockAdapter);
+        factory.registerAdapter(AdapterType.MOCK, config -> mockAdapter);
     }
 
     @AfterEach
@@ -49,7 +50,7 @@ class JbhApiGatewayClientRunnerTest {
         
         mockAdapter.thenReturn(mockResponse);
         
-        JbhHttpClientAdapter adapter = factory.createAdapter("mock");
+        JbhHttpClientAdapter adapter = factory.createAdapter(AdapterType.MOCK);
         
         try {
             JbhHttpRequest request = JbhHttpRequest.get("https://httpbin.org/get")
@@ -96,7 +97,7 @@ class JbhApiGatewayClientRunnerTest {
         
         mockAdapter.thenReturn(mockResponse);
         
-        JbhHttpClientAdapter adapter = factory.createAdapter("mock", customConfig);
+        JbhHttpClientAdapter adapter = factory.createAdapter(AdapterType.MOCK, customConfig);
         
         try {
             String jsonBody = "{\"message\":\"Hello from JBH Gateway Client\",\"timestamp\":\"" + 
@@ -132,7 +133,7 @@ class JbhApiGatewayClientRunnerTest {
         
         mockAdapter.thenReturn(mockResponse);
         
-        JbhHttpClientAdapter adapter = factory.getOrCreateAdapter("mock");
+        JbhHttpClientAdapter adapter = factory.getOrCreateAdapter(AdapterType.MOCK);
         
         JbhHttpRequest[] requests = {
             JbhHttpRequest.get("https://httpbin.org/delay/1").build(),
@@ -170,7 +171,7 @@ class JbhApiGatewayClientRunnerTest {
         
         mockAdapter.thenReturn(errorResponse);
         
-        JbhHttpClientAdapter adapter = factory.getOrCreateAdapter("mock");
+        JbhHttpClientAdapter adapter = factory.getOrCreateAdapter(AdapterType.MOCK);
         
         JbhHttpRequest request = JbhHttpRequest.get("https://httpbin.org/status/404").build();
         JbhHttpResponse response = adapter.execute(request);
@@ -191,7 +192,7 @@ class JbhApiGatewayClientRunnerTest {
         
         mockAdapter.thenReturn(errorResponse);
         
-        JbhHttpClientAdapter adapter = factory.getOrCreateAdapter("mock");
+        JbhHttpClientAdapter adapter = factory.getOrCreateAdapter(AdapterType.MOCK);
         
         JbhHttpRequest request = JbhHttpRequest.get("https://httpbin.org/status/500").build();
         JbhHttpResponse response = adapter.execute(request);
@@ -205,7 +206,7 @@ class JbhApiGatewayClientRunnerTest {
         RuntimeException connectionException = new RuntimeException("Connection refused");
         mockAdapter.thenThrow(connectionException);
         
-        JbhHttpClientAdapter adapter = factory.getOrCreateAdapter("mock");
+        JbhHttpClientAdapter adapter = factory.getOrCreateAdapter(AdapterType.MOCK);
         
         JbhHttpRequest request = JbhHttpRequest.get("https://invalid-domain-that-does-not-exist.com").build();
         
@@ -221,7 +222,7 @@ class JbhApiGatewayClientRunnerTest {
         RuntimeException timeoutException = new RuntimeException("Request timeout");
         mockAdapter.thenThrow(timeoutException);
         
-        JbhHttpClientAdapter adapter = factory.getOrCreateAdapter("mock");
+        JbhHttpClientAdapter adapter = factory.getOrCreateAdapter(AdapterType.MOCK);
         
         JbhHttpRequest timeoutRequest = JbhHttpRequest.get("https://httpbin.org/delay/10")
                 .timeout(Duration.ofSeconds(2))
@@ -239,7 +240,7 @@ class JbhApiGatewayClientRunnerTest {
         RuntimeException asyncException = new RuntimeException("Async request failed");
         mockAdapter.thenThrow(asyncException);
         
-        JbhHttpClientAdapter adapter = factory.getOrCreateAdapter("mock");
+        JbhHttpClientAdapter adapter = factory.getOrCreateAdapter(AdapterType.MOCK);
         
         JbhHttpRequest request = JbhHttpRequest.get("https://httpbin.org/error").build();
         
