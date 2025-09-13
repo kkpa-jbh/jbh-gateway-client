@@ -77,6 +77,22 @@ public final class JbhHttpHeaders {
     return builder().addAll(this).addAll(customHeaders).build();
   }
 
+  public JbhHttpHeaders withAll(JbhHttpHeaders customHeaders) {
+    if (customHeaders == null || customHeaders.isEmpty()) {
+      return this;
+    }
+
+    return builder().addAll(this).addAll(customHeaders).build();
+  }
+
+  private boolean isEmpty() {
+    return headers == null || headers.isEmpty();
+  }
+
+  public boolean isNotEmpty() {
+    return headers != null && !headers.isEmpty();
+  }
+
   public JbhHttpHeaders without(String name) {
     Map<String, List<String>> newHeaders = new HashMap<>(headers);
     newHeaders.remove(name);
@@ -100,6 +116,8 @@ public final class JbhHttpHeaders {
   public String toString() {
     return "HttpHeaders{" + headers + '}';
   }
+
+
 
 
   public static class Builder {

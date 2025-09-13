@@ -5,7 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.jbh</groupId>
-  <artifactId>jbh-api-client</artifactId>
+  <artifactId>jbh-gateway-client</artifactId>
   <version>1.0.0-SNAPSHOT</version>
 
   <properties>

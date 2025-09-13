@@ -1,16 +1,16 @@
 package com.jbh.gateway.client;
 
 import com.jbh.gateway.client.users.JbhUserGatewayClient;
-import com.jbh.gateway.internal.domains.users.JbhUserApiClientImpl;
+import com.jbh.gateway.internal.domains.users.JbhUserGatewayClientImpl;
 import java.time.Duration;
 
-public class JbhGatewayClient {
+public class JbhGatewayClientBuilder {
   private final String baseUrl;
   private final String sourceService;
   private final Duration connectTimeout;
   private final Duration requestTimeout;
 
-  private JbhGatewayClient(final Builder builder) {
+  private JbhGatewayClientBuilder(final Builder builder) {
     this.baseUrl = builder.baseUrl;
     this.sourceService = builder.sourceService;
     this.connectTimeout = builder.connectTimeout;
@@ -33,8 +33,8 @@ public class JbhGatewayClient {
     return requestTimeout;
   }
 
-  public JbhUserGatewayClient getUserClient() {
-    return new JbhUserApiClientImpl(this);
+  public JbhUserGatewayClient getUserClient() throws JbhGatewayException {
+    return new JbhUserGatewayClientImpl(this);
   }
 
   public static Builder builder() {
@@ -67,8 +67,8 @@ public class JbhGatewayClient {
       return this;
     }
 
-    public JbhGatewayClient build() {
-      return new JbhGatewayClient(this);
+    public JbhGatewayClientBuilder build() {
+      return new JbhGatewayClientBuilder(this);
     }
   }
 }

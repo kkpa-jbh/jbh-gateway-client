@@ -2,8 +2,10 @@ package com.jbh.gateway.internal.domains;
 
 import static com.jbh.gateway.internal.core.http.model.JbhHttpHeaders.REQ_SOURCE_HEADER;
 
-import com.jbh.gateway.client.JbhGatewayClient;
-import com.jbh.gateway.internal.JbhGatewayClientImpl;
+import com.jbh.gateway.client.JbhGatewayClientBuilder;
+import com.jbh.gateway.client.JbhGatewayException;
+import com.jbh.gateway.internal.JbhGatewayInternalClientImpl;
+import com.jbh.gateway.internal.JbhGatewayInternalClient;
 import com.jbh.gateway.internal.config.JbhHttpClientConfig;
 import com.jbh.gateway.internal.core.http.AdapterType;
 import com.jbh.gateway.internal.core.http.model.JbhHttpHeaders;
@@ -15,15 +17,18 @@ import java.util.Map;
 
 public class BaseApiGatewayClient {
   protected final JbhHttpValidator validator;
-  private final com.jbh.gateway.internal.JbhGatewayClient jbhGatewayClient;
-  private final JbhGatewayClient gatewayConfig;
+  private final JbhGatewayInternalClient jbhGatewayClient;
+  private final JbhGatewayClientBuilder gatewayConfig;
   private static final String JBH_API_GATEWAY_PREFIX = "/jbh-api";
 
-  public BaseApiGatewayClient(JbhGatewayClient gatewayConfig) {
+  protected Map<String,String> callerConfigHeaders = new HashMap<>();
+
+  public BaseApiGatewayClient(JbhGatewayClientBuilder gatewayConfig) throws JbhGatewayException {
     this(gatewayConfig, new JbhHttpValidatorImpl());
   }
 
-  public BaseApiGatewayClient(JbhGatewayClient gatewayConfig, JbhHttpValidator validator) {
+  public BaseApiGatewayClient(JbhGatewayClientBuilder gatewayConfig, JbhHttpValidator validator)
+      throws JbhGatewayException {
     this.gatewayConfig = gatewayConfig;
     this.validator = validator;
     JbhHttpClientConfig httpClientConfig = JbhHttpClientConfig.defaultConfig();
@@ -43,8 +48,12 @@ public class BaseApiGatewayClient {
       httpClientConfig.setCustomHeaders(customHeaders);
     }
 
+    this.callerConfigHeaders = httpClientConfig.getCustomHeaders();
+
+    validator.vaildateClientSourceHeader(JbhHttpHeaders.fromMap(callerConfigHeaders));
+
     this.jbhGatewayClient =
-        new JbhGatewayClientImpl(getGatewayHostUrl(), AdapterType.NATIVE, httpClientConfig);
+        new JbhGatewayInternalClientImpl(getGatewayHostUrl(), AdapterType.NATIVE, httpClientConfig);
   }
 
   protected String getGatewayHostUrl() {
@@ -60,7 +69,7 @@ public class BaseApiGatewayClient {
     return path.startsWith("/") ? path : "/" + path;
   }
 
-  protected JbhHttpResponse getCall(String path, JbhHttpHeaders headers) {
-    return jbhGatewayClient.get(JBH_API_GATEWAY_PREFIX + normalizePath(path), headers);
+  protected JbhHttpResponse executeGet(String path, JbhHttpHeaders clientHttpHeaders) {
+    return jbhGatewayClient.get(JBH_API_GATEWAY_PREFIX + normalizePath(path), clientHttpHeaders);
   }
 }

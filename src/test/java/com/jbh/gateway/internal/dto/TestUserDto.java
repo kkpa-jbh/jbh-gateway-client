@@ -1,4 +1,4 @@
-package com.jbh.gateway.dto;
+package com.jbh.gateway.internal.dto;
 
 import java.time.LocalDateTime;
 import java.util.Objects;

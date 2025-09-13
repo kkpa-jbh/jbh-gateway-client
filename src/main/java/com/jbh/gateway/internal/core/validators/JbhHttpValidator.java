@@ -5,6 +5,8 @@ import com.jbh.gateway.client.JbhGatewayException;
 
 public interface JbhHttpValidator {
 
-  void validateAuthentication(JbhHttpHeaders headers) throws JbhGatewayException;
+  void validateAuthorizationHeader(JbhHttpHeaders headers) throws JbhGatewayException;
+
+  void vaildateClientSourceHeader(JbhHttpHeaders headers) throws JbhGatewayException;
 
 }

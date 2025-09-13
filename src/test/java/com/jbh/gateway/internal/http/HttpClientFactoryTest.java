@@ -1,4 +1,4 @@
-package com.jbh.gateway.http;
+package com.jbh.gateway.internal.http;
 
 import com.jbh.gateway.internal.config.JbhHttpClientConfig;
 import com.jbh.gateway.internal.core.http.AdapterType;

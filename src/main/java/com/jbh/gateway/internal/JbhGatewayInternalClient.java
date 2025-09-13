@@ -18,7 +18,7 @@ import java.util.concurrent.CompletableFuture;
  * It abstracts away the underlying HTTP client implementation details and provides
  * a clean, domain-focused API.
  */
-public interface JbhGatewayClient extends AutoCloseable {
+public interface JbhGatewayInternalClient extends AutoCloseable {
 
     // GET request methods
 

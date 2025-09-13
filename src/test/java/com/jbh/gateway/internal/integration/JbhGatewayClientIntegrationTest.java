@@ -1,16 +1,16 @@
-package com.jbh.gateway.integration;
+package com.jbh.gateway.internal.integration;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.jbh.gateway.internal.JbhGatewayClient;
-import com.jbh.gateway.internal.JbhGatewayClientImpl;
+import com.jbh.gateway.internal.JbhGatewayInternalClient;
+import com.jbh.gateway.internal.JbhGatewayInternalClientImpl;
 import com.jbh.gateway.internal.config.JbhHttpClientConfig;
 import com.jbh.gateway.internal.config.JbhRetryConfig;
 import com.jbh.gateway.internal.core.http.AdapterType;
 import com.jbh.gateway.internal.core.http.model.JbhHttpHeaders;
 import com.jbh.gateway.internal.core.http.model.JbhHttpMethod;
 import com.jbh.gateway.client.JbhHttpResponse;
-import com.jbh.gateway.dto.TestUserDto;
+import com.jbh.gateway.internal.dto.TestUserDto;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -22,12 +22,12 @@ import org.junit.jupiter.api.Test;
 @Tag("integration")
 class JbhGatewayClientIntegrationTest {
 
-  private JbhGatewayClient gatewayClient;
+  private JbhGatewayInternalClient gatewayClient;
 
   @BeforeEach
   void setUp() {
     // Use httpbin.org as a test service
-    gatewayClient = new JbhGatewayClientImpl("https://httpbin.org", AdapterType.NATIVE);
+    gatewayClient = new JbhGatewayInternalClientImpl("https://httpbin.org", AdapterType.NATIVE);
   }
 
   @AfterEach
@@ -214,7 +214,7 @@ class JbhGatewayClientIntegrationTest {
             .build())
         .build();
 
-    JbhGatewayClient customClient = new JbhGatewayClientImpl(
+    JbhGatewayInternalClient customClient = new JbhGatewayInternalClientImpl(
         "https://httpbin.org", AdapterType.NATIVE, customConfig);
 
     try {

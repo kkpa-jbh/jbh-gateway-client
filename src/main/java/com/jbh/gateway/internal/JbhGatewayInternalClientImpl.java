@@ -1,5 +1,6 @@
 package com.jbh.gateway.internal;
 
+import com.jbh.gateway.client.JbhHttpResponse;
 import com.jbh.gateway.internal.config.JbhHttpClientConfig;
 import com.jbh.gateway.internal.core.http.AdapterType;
 import com.jbh.gateway.internal.core.http.JbhHttpClientAdapter;
@@ -8,7 +9,6 @@ import com.jbh.gateway.internal.core.http.exception.HttpClientException;
 import com.jbh.gateway.internal.core.http.model.JbhHttpHeaders;
 import com.jbh.gateway.internal.core.http.model.JbhHttpMethod;
 import com.jbh.gateway.internal.core.http.model.JbhHttpRequest;
-import com.jbh.gateway.client.JbhHttpResponse;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Objects;
@@ -24,9 +24,9 @@ import org.slf4j.LoggerFactory;
  * <p>This is the primary class that consuming microservices will interact with. It handles URL
  * construction, header propagation, and integrates with the underlying HTTP client adapters.
  */
-public class JbhGatewayClientImpl implements JbhGatewayClient {
+public class JbhGatewayInternalClientImpl implements JbhGatewayInternalClient {
 
-  private static final Logger log = LoggerFactory.getLogger(JbhGatewayClientImpl.class);
+  private static final Logger log = LoggerFactory.getLogger(JbhGatewayInternalClientImpl.class);
 
   private final String baseUrl;
   private final JbhHttpClientAdapter jbhHttpClientAdapter;
@@ -40,7 +40,7 @@ public class JbhGatewayClientImpl implements JbhGatewayClient {
    * @param baseUrl the base URL of the gateway service
    * @param adapterType the type of HTTP client adapter to use ("native", "okhttp")
    */
-  public JbhGatewayClientImpl(String baseUrl, AdapterType adapterType) {
+  public JbhGatewayInternalClientImpl(String baseUrl, AdapterType adapterType) {
     this(baseUrl, adapterType, JbhHttpClientConfig.defaultConfig());
   }
 
@@ -52,7 +52,7 @@ public class JbhGatewayClientImpl implements JbhGatewayClient {
    * @param httpClientConfig the HTTP client configuration
    * @throws IllegalArgumentException if parameters are invalid
    */
-  public JbhGatewayClientImpl(
+  public JbhGatewayInternalClientImpl(
       String baseUrl, AdapterType httpClientType, JbhHttpClientConfig httpClientConfig) {
     this.baseUrl = validateAndNormalizeBaseUrl(baseUrl);
     this.jbhHttpClientFactory = new JbhHttpClientFactory(httpClientConfig);
@@ -101,7 +101,13 @@ public class JbhGatewayClientImpl implements JbhGatewayClient {
    */
   @Override
   public JbhHttpResponse get(String path, JbhHttpHeaders headers) {
-    return get(path, headers, defaultTimeout);
+    JbhHttpHeaders customHeaders = null;
+    if (defaultJbhHttpHeaders != null && defaultJbhHttpHeaders.isNotEmpty()) {
+      customHeaders = defaultJbhHttpHeaders.withAll(headers);
+    } else {
+      customHeaders = headers;
+    }
+    return get(path, customHeaders, defaultTimeout);
   }
 
   /**

@@ -10,11 +10,14 @@ import com.jbh.gateway.internal.core.http.model.JbhHttpHeaders;
 public class JbhHttpValidatorImpl implements JbhHttpValidator {
 
   @Override
-  public void validateAuthentication(final JbhHttpHeaders headers) throws JbhGatewayException {
+  public void validateAuthorizationHeader(final JbhHttpHeaders headers) throws JbhGatewayException {
     if (!hasValidAuthorization(headers)) {
       throw new JbhGatewayException("Missing or invalid Authorization header");
     }
+  }
 
+  @Override
+  public void vaildateClientSourceHeader(JbhHttpHeaders headers) throws JbhGatewayException {
     if (!headers.contains(REQ_SOURCE_HEADER)) {
       throw new JbhGatewayException("Missing microservice source header");
     }
