@@ -14,7 +14,7 @@ public class JbhUserGatewayClientTest {
   static JbhUserGatewayClient userClient;
 
   static final String GOOD_TOKEN =
-      "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIyYWZiZGNmYy1lYmM2LTQxODAtOGE2My02MDljZjhmMTk4YmEiLCJpYXQiOjE3NTc1ODE2NjgsImV4cCI6MTc1ODE4NjQ2OH0.j0RbO6jojm_Rw-RHdlbOCsJM6uToZu2Uphw3Q67V_r5_s6nuv_CLPuFeIXYUASpwweNdgSFMOEpPLSqQLKfrJw";
+      "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIyYWZiZGNmYy1lYmM2LTQxODAtOGE2My02MDljZjhmMTk4YmEiLCJpYXQiOjE3NTc4NDQyNjksImV4cCI6MTc1ODQ0OTA2OX0.r1qQJATRVVk9mw5twn66c-M-aszjgZ96H9cmsAV9W9-STEj0Da80vb_J3Zm8M8ZAac_1Lt8wMTdAedpaDV5hIg";
 
   @BeforeAll
   public static void setup() {

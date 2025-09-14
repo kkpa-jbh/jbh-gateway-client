@@ -12,6 +12,7 @@ import com.jbh.gateway.internal.core.http.model.JbhHttpRequest;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -125,7 +126,7 @@ public class JbhGatewayInternalClientImpl implements JbhGatewayInternalClient {
         JbhHttpRequest.get(buildUrl(path)).headers(headers).timeout(timeout).build();
 
     log.debug("Executing GET request to: {}", request.getUri());
-    return jbhHttpClientAdapter.execute(request);
+    return jbhHttpClientAdapter.executeForObject(request, UUID.class);
   }
 
   // POST request methods
