@@ -73,9 +73,10 @@ public class JbhGatewayInternalClientImpl implements JbhGatewayInternalClient {
     }
 
     log.info(
-        "Gateway client initialized with base URL: {}, client type: {}",
+        "Gateway client initialized with base URL: {}, client type: {} , headers: {}",
         this.baseUrl,
-        httpClientType);
+        httpClientType,
+        defaultJbhHttpHeaders);
   }
 
   // GET request methods
@@ -155,6 +156,7 @@ public class JbhGatewayInternalClientImpl implements JbhGatewayInternalClient {
    */
   @Override
   public JbhHttpResponse post(String path, String jsonBody, JbhHttpHeaders headers) {
+    log.info("Executing POST request to: {}", path);
     return post(path, jsonBody, headers, defaultTimeout);
   }
 
@@ -178,7 +180,7 @@ public class JbhGatewayInternalClientImpl implements JbhGatewayInternalClient {
             .timeout(timeout)
             .build();
 
-    log.debug("Executing POST request to: {}", request.getUri());
+    log.info("Executing POST request to: {}", request.getUri());
     return jbhHttpClientAdapter.execute(request);
   }
 

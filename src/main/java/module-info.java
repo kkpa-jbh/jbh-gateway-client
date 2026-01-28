@@ -23,5 +23,6 @@ module com.jbh.gateway {
     // Public API exports - what microservices can use
     exports com.jbh.gateway.client;
     exports com.jbh.gateway.client.users;
+    exports com.jbh.gateway.client.notifications;
 
 }

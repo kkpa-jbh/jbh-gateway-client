@@ -12,7 +12,7 @@ public class JbhHttpValidatorImpl implements JbhHttpValidator {
   @Override
   public void validateAuthorizationHeader(final JbhHttpHeaders headers) throws JbhGatewayException {
     if (!hasValidAuthorization(headers)) {
-      throw new JbhGatewayException("Missing or invalid Authorization header");
+      throw new JbhGatewayException("Missing or invalid Authorization header " + headers.getFirst(AUTHORIZATION_HEADER));
     }
   }
 

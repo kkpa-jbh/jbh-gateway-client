@@ -1,6 +1,8 @@
 package com.jbh.gateway.client;
 
+import com.jbh.gateway.client.notifications.JbhNotificationGatewayClient;
 import com.jbh.gateway.client.users.JbhUserGatewayClient;
+import com.jbh.gateway.internal.domains.notifications.JbhNotificationGatewayClientImpl;
 import com.jbh.gateway.internal.domains.users.JbhUserGatewayClientImpl;
 import java.time.Duration;
 
@@ -35,6 +37,10 @@ public class JbhGatewayClientBuilder {
 
   public JbhUserGatewayClient getUserClient() throws JbhGatewayException {
     return new JbhUserGatewayClientImpl(this);
+  }
+
+  public JbhNotificationGatewayClient getNotificationClient() throws JbhGatewayException {
+    return new JbhNotificationGatewayClientImpl(this);
   }
 
   public static Builder builder() {

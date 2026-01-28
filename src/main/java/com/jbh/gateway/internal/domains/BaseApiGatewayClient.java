@@ -72,4 +72,16 @@ public class BaseApiGatewayClient {
   protected JbhHttpResponse executeGet(String path, JbhHttpHeaders clientHttpHeaders) {
     return jbhGatewayClient.get(JBH_API_GATEWAY_PREFIX + normalizePath(path), clientHttpHeaders);
   }
+
+  protected JbhHttpResponse executePost(String path, String jsonBody, JbhHttpHeaders clientHttpHeaders) {
+    return jbhGatewayClient.post(JBH_API_GATEWAY_PREFIX + normalizePath(path), jsonBody, clientHttpHeaders);
+  }
+
+  protected JbhHttpResponse executePut(String path, String jsonBody, JbhHttpHeaders clientHttpHeaders) {
+    return jbhGatewayClient.put(JBH_API_GATEWAY_PREFIX + normalizePath(path), jsonBody, clientHttpHeaders);
+  }
+
+  protected JbhHttpResponse executeDelete(String path, JbhHttpHeaders clientHttpHeaders) {
+    return jbhGatewayClient.delete(JBH_API_GATEWAY_PREFIX + normalizePath(path), clientHttpHeaders);
+  }
 }

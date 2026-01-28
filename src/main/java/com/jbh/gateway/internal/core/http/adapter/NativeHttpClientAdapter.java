@@ -50,10 +50,12 @@ public class NativeHttpClientAdapter implements JbhHttpClientAdapter {
   @Override
   public JbhHttpResponse execute(JbhHttpRequest request) {
 
-    log.debug("Executing synchronous request: {} {}", request.getMethod(), request.getUri());
+    log.info("Executing synchronous request: {} {}", request.getMethod(), request.getUri());
 
     try {
-      return executeWithRetry(request, config.getRetryConfig());
+      var result =  executeWithRetry(request, config.getRetryConfig());
+      log.info("Request completed successfully with status {}", result.getStatusCode());
+      return result;
     } catch (Exception e) {
       throw mapException(e, request);
     }
@@ -62,7 +64,7 @@ public class NativeHttpClientAdapter implements JbhHttpClientAdapter {
   @Override
   public CompletableFuture<JbhHttpResponse> executeAsync(JbhHttpRequest request) {
 
-    log.debug("Executing asynchronous request: {} {}", request.getMethod(), request.getUri());
+    log.info("Executing asynchronous request: {} {}", request.getMethod(), request.getUri());
 
     return executeAsyncWithRetry(request, config.getRetryConfig())
         .exceptionally(
@@ -288,9 +290,10 @@ public class NativeHttpClientAdapter implements JbhHttpClientAdapter {
 
     for (int attempt = 1; attempt <= retryConfig.getMaxAttempts(); attempt++) {
       try {
+        log.info("Executing request: {} {}", request.getMethod(), request.getUri());
         if (attempt > 1) {
           Duration delay = retryConfig.calculateDelay(attempt);
-          log.debug(
+          log.info(
               "Retrying request (attempt {}/{}) after {} ms delay",
               attempt,
               retryConfig.getMaxAttempts(),
@@ -307,7 +310,7 @@ public class NativeHttpClientAdapter implements JbhHttpClientAdapter {
         // Check if we should retry based on status code
         if (attempt < retryConfig.getMaxAttempts()
             && retryConfig.shouldRetryForStatusCode(response.getStatusCode())) {
-          log.debug(
+          log.info(
               "Received retryable status code {} for attempt {}/{}",
               response.getStatusCode(),
               attempt,

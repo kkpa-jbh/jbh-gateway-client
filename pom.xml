@@ -19,6 +19,13 @@
   </properties>
 
   <dependencies>
+
+    <dependency>
+      <artifactId>jbh-notification-contracts</artifactId>
+      <groupId>com.jbh</groupId>
+      <version>1.0.0-SNAPSHOT</version>
+    </dependency>
+    
     <!-- Jackson for JSON processing -->
     <!-- Core Jackson -->
     <dependency>
