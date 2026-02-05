@@ -19,8 +19,9 @@ module com.jbh.gateway {
     requires com.fasterxml.jackson.datatype.jsr310;
     requires com.fasterxml.jackson.module.paramnames;
     requires org.slf4j;
-    
-    // Public API exports - what microservices can use
+    requires transitive jbh.notification.contracts;
+
+  // Public API exports - what microservices can use
     exports com.jbh.gateway.client;
     exports com.jbh.gateway.client.users;
     exports com.jbh.gateway.client.notifications;

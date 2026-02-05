@@ -2,6 +2,9 @@ package com.jbh.gateway.client.notifications;
 
 import com.jbh.gateway.client.JbhGatewayException;
 import com.jbh.gateway.client.JbhHttpResponse;
+import com.jbh.notification.contracts.NotificationType;
+import com.jbh.notification.contracts.SendNotificationRequest;
+import com.jbh.notification.contracts.validation.NotificationValidationException;
 import java.util.Map;
 
 public interface JbhNotificationGatewayClient {
@@ -19,20 +22,6 @@ public interface JbhNotificationGatewayClient {
         SendNotificationRequest request,
         NotificationType type,
         Map<String, String> headers
-    ) throws JbhGatewayException;
+    ) throws JbhGatewayException, NotificationValidationException;
 
-    /**
-     * Sends an EMAIL notification (default type).
-     *
-     * @param request the notification request
-     * @param headers HTTP headers including Authorization
-     * @return JbhHttpResponse with the result
-     * @throws JbhGatewayException if the request fails
-     */
-    default JbhHttpResponse sendEmailNotification(
-        SendNotificationRequest request,
-        Map<String, String> headers
-    ) throws JbhGatewayException {
-        return sendNotification(request, NotificationType.EMAIL, headers);
-    }
 }

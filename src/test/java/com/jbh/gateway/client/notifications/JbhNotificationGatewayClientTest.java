@@ -2,12 +2,16 @@ package com.jbh.gateway.client.notifications;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.jbh.gateway.client.JbhGatewayClientBuilder;
 import com.jbh.gateway.client.JbhGatewayException;
 import com.jbh.gateway.client.JbhHttpResponse;
+import com.jbh.notification.contracts.NotificationType;
+import com.jbh.notification.contracts.SendNotificationRequest;
+import com.jbh.notification.contracts.validation.NotificationValidationException;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -87,7 +91,6 @@ public class JbhNotificationGatewayClientTest {
             .senderEmail("sender@example.com")
             .subject("Test Subject")
             .message("Test message body")
-            .metadata(Map.of("key", "value"))
             .build();
 
         assertEquals(recipientId, request.recipientId());
@@ -96,8 +99,7 @@ public class JbhNotificationGatewayClientTest {
         assertEquals("sender@example.com", request.senderEmail());
         assertEquals("Test Subject", request.subject());
         assertEquals("Test message body", request.message());
-        assertNotNull(request.metadata());
-        assertEquals("value", request.metadata().get("key"));
+        assertNull(request.metadata());
     }
 
     @Test
@@ -134,7 +136,7 @@ public class JbhNotificationGatewayClientTest {
 
         JbhGatewayException exception = assertThrows(
             JbhGatewayException.class,
-            () -> notificationClient.sendEmailNotification(request, Map.of("Authorization", TOKEN_WITHOUT_BEARER))
+            () -> notificationClient.sendNotification(request, NotificationType.EMAIL, Map.of("Authorization", TOKEN_WITHOUT_BEARER))
         );
 
         assertTrue(exception.getMessage().contains("Authorization"));
@@ -150,7 +152,6 @@ public class JbhNotificationGatewayClientTest {
                 .senderEmail("sender@example.com")
                 .subject("Test Email")
                 .message("This is a test email message")
-                .metadata(Map.of("campaign", "test"))
                 .build();
 
             JbhHttpResponse response = notificationClient.sendNotification(
@@ -161,7 +162,7 @@ public class JbhNotificationGatewayClientTest {
 
             assertEquals(200, response.getStatusCode());
             assertTrue(response.isSuccessful());
-        } catch (JbhGatewayException e) {
+        } catch (JbhGatewayException | NotificationValidationException e) {
             throw new RuntimeException(e);
         }
     }
