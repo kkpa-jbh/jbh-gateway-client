@@ -22,9 +22,9 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
           cache: maven
-          server-id: github
 
       - name: Deploy library
-        run: mvn -B -Pgithub -DskipTests deploy
+        run: mvn -B -s .github/maven-settings.xml -Pgithub -DskipTests deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PACKAGES_READ_TOKEN: ${{ secrets.PACKAGES_READ_TOKEN }}
