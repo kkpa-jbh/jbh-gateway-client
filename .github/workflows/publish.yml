@@ -1,0 +1,30 @@
+# Publishes jbh-gateway-client to GitHub Packages.
+# Needs jbh-notification-contracts, published first by jbh-personal-finance (publish-contracts).
+name: Publish
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+          server-id: github
+
+      - name: Deploy library
+        run: mvn -B -Pgithub -DskipTests deploy
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

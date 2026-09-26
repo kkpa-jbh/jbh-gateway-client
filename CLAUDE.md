@@ -70,6 +70,7 @@ All client methods must:
 ## Dependencies
 
 - **jbh-notification-contracts**: External contract dependency (required transitive module)
+- **Publishing**: local `mvn install`; CI publishes to GitHub Packages with `mvn -Pgithub deploy` (see `README.md` "Install and publish")
 - **Jackson**: JSON serialization
 - **java.net.http**: Native HTTP client (no external HTTP libs in main scope)
 - **OkHttp MockWebServer**: Test dependency only

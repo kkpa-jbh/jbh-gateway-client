@@ -152,6 +152,15 @@ public record MyRequest(
 
 ---
 
+## Install and publish
+
+- **Local:** `mvn install`. It puts the library in `~/.m2`. `jbh-iam` and `jbh-personal-finance` find it there.
+  Install `jbh-notification-contracts` first (from `jbh-personal-finance`).
+- **CI:** `.github/workflows/publish.yml` runs `mvn -Pgithub deploy` on every push to `main`.
+  It publishes to GitHub Packages (`https://maven.pkg.github.com/kkpa-jbh/jbh-gateway-client`).
+  The `github` profile reads `jbh-notification-contracts` from the `jbh-personal-finance` package.
+- **CI order:** contracts (`jbh-personal-finance` → `publish-contracts`) → this library → `jbh-iam` and `jbh-personal-finance` images.
+
 ## BaseApiGatewayClient Methods
 
 The base class provides these protected methods:
