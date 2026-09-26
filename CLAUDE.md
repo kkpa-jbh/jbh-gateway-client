@@ -75,18 +75,18 @@ All client methods must:
 - **java.net.http**: Native HTTP client (no external HTTP libs in main scope)
 - **OkHttp MockWebServer**: Test dependency only
 
-## System map sync (`../README.md`)
+## System map sync (`../jbh-deploy/README.md`)
 
 This repo is one part of the JBH system. The map of how all JBH services talk to each other
-lives in `../README.md` (relative to this repo's root: the `kkpa-jbh` folder that holds all JBH repos).
+lives in `../jbh-deploy/README.md` (the `jbh-deploy` repo, a sibling of this one in the `kkpa-jbh` folder).
 
-**Rule:** when a change in this repo affects how services communicate, update `../README.md`
-in the same task. Change only the rows or lines that are affected. Then tell the user that
-`../README.md` changed, because that folder is not a git repo and the change is not versioned.
+**Rule:** when a change in this repo affects how services communicate, update `../jbh-deploy/README.md`
+in the same task. Change only the rows or lines that are affected. Then commit it in the
+`jbh-deploy` repo (a separate commit there; never one commit across repos).
 
 Triggers for this repo:
 - Add a new domain client or method (this is a new service-to-service call)
 - Change a path a client calls (for example `/users/find-user-id`, `/notifications/v1`)
 - Change the dependency on `jbh-notification-contracts`, the groupId/artifactId, or the version (this changes the build order)
 
-If you are not sure a change counts, read `../README.md` and check whether any line is now wrong.
+If you are not sure a change counts, read `../jbh-deploy/README.md` and check whether any line is now wrong.
