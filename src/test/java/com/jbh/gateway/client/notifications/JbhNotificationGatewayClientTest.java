@@ -10,7 +10,7 @@ import com.jbh.gateway.client.JbhGatewayClientBuilder;
 import com.jbh.gateway.client.JbhGatewayException;
 import com.jbh.gateway.client.JbhHttpResponse;
 import com.jbh.notification.contracts.NotificationType;
-import com.jbh.notification.contracts.SendNotificationRequest;
+import com.jbh.notification.contracts.SendNotificationCommand;
 import com.jbh.notification.contracts.validation.NotificationValidationException;
 import java.util.Map;
 import java.util.UUID;
@@ -43,7 +43,7 @@ public class JbhNotificationGatewayClientTest {
     public void shouldThrowExceptionWhenNotValidAuthorizationHeader() {
         String TOKEN_WITHOUT_BEARER = "eyJhbGciOiJIUzUxMiJ9..";
 
-        SendNotificationRequest request = SendNotificationRequest.builder()
+        SendNotificationCommand request = SendNotificationCommand.builder()
             .recipientId(UUID.randomUUID())
             .recipientEmail("recipient@example.com")
             .subject("Test Subject")
@@ -62,7 +62,7 @@ public class JbhNotificationGatewayClientTest {
 
     @Test
     public void shouldThrowExceptionWhenMissingAuthorizationHeader() {
-        SendNotificationRequest request = SendNotificationRequest.builder()
+        SendNotificationCommand request = SendNotificationCommand.builder()
             .recipientId(UUID.randomUUID())
             .recipientEmail("recipient@example.com")
             .subject("Test Subject")
@@ -84,7 +84,7 @@ public class JbhNotificationGatewayClientTest {
         UUID recipientId = UUID.randomUUID();
         UUID senderId = UUID.randomUUID();
 
-        SendNotificationRequest request = SendNotificationRequest.builder()
+        SendNotificationCommand request = SendNotificationCommand.builder()
             .recipientId(recipientId)
             .recipientEmail("recipient@example.com")
             .senderUserId(senderId)
@@ -104,7 +104,7 @@ public class JbhNotificationGatewayClientTest {
 
     @Test
     public void shouldBuildNotificationRequestWithMinimalFields() {
-        SendNotificationRequest request = SendNotificationRequest.builder()
+        SendNotificationCommand request = SendNotificationCommand.builder()
             .recipientEmail("recipient@example.com")
             .subject("Test")
             .message("Message")
@@ -126,7 +126,7 @@ public class JbhNotificationGatewayClientTest {
 
     @Test
     public void shouldUseEmailAsDefaultInConvenienceMethod() throws JbhGatewayException {
-        SendNotificationRequest request = SendNotificationRequest.builder()
+        SendNotificationCommand request = SendNotificationCommand.builder()
             .recipientEmail("test@example.com")
             .subject("Test")
             .message("Message")
@@ -146,7 +146,7 @@ public class JbhNotificationGatewayClientTest {
     // Uncomment @Test to run manually
     public void shouldSendEmailNotification() {
         try {
-            SendNotificationRequest request = SendNotificationRequest.builder()
+            SendNotificationCommand request = SendNotificationCommand.builder()
                 .recipientId(UUID.randomUUID())
                 .recipientEmail("recipient@example.com")
                 .senderEmail("sender@example.com")

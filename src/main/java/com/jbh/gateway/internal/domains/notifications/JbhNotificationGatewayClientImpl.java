@@ -8,7 +8,7 @@ import com.jbh.gateway.internal.core.http.model.JbhHttpHeaders;
 import com.jbh.gateway.internal.core.mappers.JacksonJsonUtil;
 import com.jbh.gateway.internal.domains.BaseApiGatewayClient;
 import com.jbh.notification.contracts.NotificationType;
-import com.jbh.notification.contracts.SendNotificationRequest;
+import com.jbh.notification.contracts.SendNotificationCommand;
 import com.jbh.notification.contracts.validation.NotificationValidationException;
 import com.jbh.notification.contracts.validation.NotificationValidator;
 import java.util.Map;
@@ -25,7 +25,7 @@ public class JbhNotificationGatewayClientImpl extends BaseApiGatewayClient
 
   @Override
   public JbhHttpResponse sendNotification(
-      SendNotificationRequest request, NotificationType type, Map<String, String> clientHttpHeaders)
+      SendNotificationCommand request, NotificationType type, Map<String, String> clientHttpHeaders)
       throws JbhGatewayException, NotificationValidationException {
     JbhHttpHeaders headers = JbhHttpHeaders.fromMap(clientHttpHeaders);
     validator.validateAuthorizationHeader(headers);

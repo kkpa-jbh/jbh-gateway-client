@@ -3,7 +3,7 @@ package com.jbh.gateway.client.notifications;
 import com.jbh.gateway.client.JbhGatewayException;
 import com.jbh.gateway.client.JbhHttpResponse;
 import com.jbh.notification.contracts.NotificationType;
-import com.jbh.notification.contracts.SendNotificationRequest;
+import com.jbh.notification.contracts.SendNotificationCommand;
 import com.jbh.notification.contracts.validation.NotificationValidationException;
 import java.util.Map;
 
@@ -19,7 +19,7 @@ public interface JbhNotificationGatewayClient {
      * @throws JbhGatewayException if the request fails
      */
     JbhHttpResponse sendNotification(
-        SendNotificationRequest request,
+        SendNotificationCommand request,
         NotificationType type,
         Map<String, String> headers
     ) throws JbhGatewayException, NotificationValidationException;

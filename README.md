@@ -39,7 +39,7 @@ src/main/java/com/jbh/gateway/
 │   └── notifications/                     # Notification domain
 │       ├── JbhNotificationGatewayClient.java
 │       ├── NotificationType.java
-│       └── SendNotificationRequest.java
+│       └── SendNotificationCommand.java
 │
 └── internal/                        # HIDDEN IMPLEMENTATION (not exported)
     ├── domains/
