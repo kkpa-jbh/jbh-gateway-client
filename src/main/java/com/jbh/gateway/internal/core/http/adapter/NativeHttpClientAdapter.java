@@ -134,7 +134,7 @@ public class NativeHttpClientAdapter implements JbhHttpClientAdapter {
 
         // Check if we should retry based on status code
         if (attempt < retryConfig.getMaxAttempts()
-            && retryConfig.shouldRetryForStatusCode(response.getStatusCode())) {
+            && retryConfig.shouldRetryForStatusCode(request.getMethod(), response.getStatusCode())) {
           log.debug(
               "Received retryable status code {} for typed attempt {}/{}",
               response.getStatusCode(),
@@ -156,7 +156,7 @@ public class NativeHttpClientAdapter implements JbhHttpClientAdapter {
       } catch (Exception e) {
         lastException = e;
 
-        if (attempt >= retryConfig.getMaxAttempts() || !retryConfig.shouldRetryForException(e)) {
+        if (attempt >= retryConfig.getMaxAttempts() || !retryConfig.shouldRetryForException(request.getMethod(), e)) {
           break;
         }
 
@@ -189,7 +189,7 @@ public class NativeHttpClientAdapter implements JbhHttpClientAdapter {
               response -> {
                 // Check if we should retry based on status code
                 if (attempt < retryConfig.getMaxAttempts()
-                    && retryConfig.shouldRetryForStatusCode(response.getStatusCode())) {
+                    && retryConfig.shouldRetryForStatusCode(request.getMethod(), response.getStatusCode())) {
 
                   Duration delay = retryConfig.calculateDelay(attempt + 1);
                   log.debug(
@@ -214,7 +214,7 @@ public class NativeHttpClientAdapter implements JbhHttpClientAdapter {
           .exceptionally(
               throwable -> {
                 if (attempt < retryConfig.getMaxAttempts()
-                    && retryConfig.shouldRetryForException(throwable)) {
+                    && retryConfig.shouldRetryForException(request.getMethod(), throwable)) {
 
                   Duration delay = retryConfig.calculateDelay(attempt + 1);
                   log.debug(
@@ -309,7 +309,7 @@ public class NativeHttpClientAdapter implements JbhHttpClientAdapter {
 
         // Check if we should retry based on status code
         if (attempt < retryConfig.getMaxAttempts()
-            && retryConfig.shouldRetryForStatusCode(response.getStatusCode())) {
+            && retryConfig.shouldRetryForStatusCode(request.getMethod(), response.getStatusCode())) {
           log.info(
               "Received retryable status code {} for attempt {}/{}",
               response.getStatusCode(),
@@ -331,7 +331,7 @@ public class NativeHttpClientAdapter implements JbhHttpClientAdapter {
       } catch (Exception e) {
         lastException = e;
 
-        if (attempt >= retryConfig.getMaxAttempts() || !retryConfig.shouldRetryForException(e)) {
+        if (attempt >= retryConfig.getMaxAttempts() || !retryConfig.shouldRetryForException(request.getMethod(), e)) {
           break;
         }
 
@@ -365,7 +365,7 @@ public class NativeHttpClientAdapter implements JbhHttpClientAdapter {
               response -> {
                 // Check if we should retry based on status code
                 if (attempt < retryConfig.getMaxAttempts()
-                    && retryConfig.shouldRetryForStatusCode(response.getStatusCode())) {
+                    && retryConfig.shouldRetryForStatusCode(request.getMethod(), response.getStatusCode())) {
 
                   Duration delay = retryConfig.calculateDelay(attempt + 1);
                   log.debug(
@@ -390,7 +390,7 @@ public class NativeHttpClientAdapter implements JbhHttpClientAdapter {
           .exceptionally(
               throwable -> {
                 if (attempt < retryConfig.getMaxAttempts()
-                    && retryConfig.shouldRetryForException(throwable)) {
+                    && retryConfig.shouldRetryForException(request.getMethod(), throwable)) {
 
                   Duration delay = retryConfig.calculateDelay(attempt + 1);
                   log.debug(
