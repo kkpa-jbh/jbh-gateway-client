@@ -352,9 +352,16 @@ mvn test -Dtest=JbhNotificationGatewayClientTest
 # Run all client tests
 mvn test -Dtest="com.jbh.gateway.client.**"
 
-# Run internal/integration tests
+# Run internal tests
 mvn test -Dtest="com.jbh.gateway.internal.**"
+
+# Integration tests call httpbin.org. mvn test skips them. Run them:
+mvn test -Dgroups=integration -DexcludedGroups=
 ```
+
+Retry and error tests use `MockWebServer` (a local server, no network).
+To swap the transport in a test, pass a `JbhHttpClientAdapter` lambda to a domain client:
+`new JbhUserGatewayClientImpl(config, request -> { throw new ConnectException(); })`.
 
 ### Test Checklist for New Clients
 

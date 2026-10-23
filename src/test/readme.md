@@ -17,10 +17,8 @@ Benefits over Mock Tests:
 
 Usage:
 
+# Regular builds (mvn test) exclude them. See excludedGroups in pom.xml.
 # Run only integration tests
-mvn test -Dgroups=integration
-
-# Exclude integration tests from regular builds
-mvn test -DexcludedGroups=integration
+mvn test -Dgroups=integration -DexcludedGroups=
 
 This gives you both testing approaches: fast, reliable unit tests with mocks AND comprehensive integration tests with real network calls.
