@@ -12,7 +12,6 @@ import com.jbh.gateway.internal.core.http.model.JbhHttpRequest;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Objects;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -103,13 +102,7 @@ public class JbhGatewayInternalClientImpl implements JbhGatewayInternalClient {
    */
   @Override
   public JbhHttpResponse get(String path, JbhHttpHeaders headers) {
-    JbhHttpHeaders customHeaders = null;
-    if (defaultJbhHttpHeaders != null && defaultJbhHttpHeaders.isNotEmpty()) {
-      customHeaders = defaultJbhHttpHeaders.withAll(headers);
-    } else {
-      customHeaders = headers;
-    }
-    return get(path, customHeaders, defaultTimeout);
+    return get(path, withDefaultHeaders(headers), defaultTimeout);
   }
 
   /**
@@ -127,7 +120,7 @@ public class JbhGatewayInternalClientImpl implements JbhGatewayInternalClient {
         JbhHttpRequest.get(buildUrl(path)).headers(headers).timeout(timeout).build();
 
     log.debug("Executing GET request to: {}", request.getUri());
-    return jbhHttpClientAdapter.executeForObject(request, UUID.class);
+    return jbhHttpClientAdapter.execute(request);
   }
 
   // POST request methods
@@ -295,7 +288,7 @@ public class JbhGatewayInternalClientImpl implements JbhGatewayInternalClient {
    */
   @Override
   public <T> JbhHttpResponse getForObject(String path, Class<T> responseType) {
-    return getForObject(path, defaultJbhHttpHeaders, responseType);
+    return getForObject(path, JbhHttpHeaders.empty(), responseType);
   }
 
   /**
@@ -313,7 +306,10 @@ public class JbhGatewayInternalClientImpl implements JbhGatewayInternalClient {
   public <T> JbhHttpResponse getForObject(
       String path, JbhHttpHeaders headers, Class<T> responseType) {
     JbhHttpRequest request =
-        JbhHttpRequest.get(buildUrl(path)).headers(headers).timeout(defaultTimeout).build();
+        JbhHttpRequest.get(buildUrl(path))
+            .headers(withDefaultHeaders(headers))
+            .timeout(defaultTimeout)
+            .build();
 
     log.debug(
         "Executing typed GET request to: {} for type: {}",
@@ -557,6 +553,14 @@ public class JbhGatewayInternalClientImpl implements JbhGatewayInternalClient {
 
     // Remove trailing slash for consistency
     return baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
+  }
+
+  /** Adds the default headers (source service) before the caller headers. */
+  private JbhHttpHeaders withDefaultHeaders(JbhHttpHeaders headers) {
+    if (defaultJbhHttpHeaders != null && defaultJbhHttpHeaders.isNotEmpty()) {
+      return defaultJbhHttpHeaders.withAll(headers);
+    }
+    return headers;
   }
 
   /** Builds a complete URL by combining the base URL with the given path. */
