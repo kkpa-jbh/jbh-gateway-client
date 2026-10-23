@@ -49,6 +49,10 @@ src/main/java/com/jbh/gateway/
     │   └── notifications/
     │       └── JbhNotificationGatewayClientImpl.java
     └── core/                              # HTTP infrastructure
+        └── http/
+            ├── JbhHttpClientAdapter.java      # Transport seam: execute(request). Tests swap it.
+            └── adapter/
+                └── NativeHttpClientAdapter.java   # java.net.http + retries
 
 src/test/java/com/jbh/gateway/
 ├── client/                          # CLIENT TESTS (simulates library callers)
@@ -58,9 +62,6 @@ src/test/java/com/jbh/gateway/
 │       └── JbhNotificationGatewayClientTest.java
 │
 └── internal/                        # INTERNAL TESTS (cross-client, infrastructure)
-    ├── http/
-    │   ├── HttpClientFactoryTest.java
-    │   └── MockHttpClientAdapter.java
     └── integration/
         └── JbhGatewayClientIntegrationTest.java
 ```

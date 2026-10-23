@@ -4,6 +4,7 @@ import com.jbh.gateway.client.JbhGatewayClientBuilder;
 import com.jbh.gateway.client.JbhGatewayException;
 import com.jbh.gateway.client.JbhHttpResponse;
 import com.jbh.gateway.client.users.JbhUserGatewayClient;
+import com.jbh.gateway.internal.core.http.JbhHttpClientAdapter;
 import com.jbh.gateway.internal.core.http.model.JbhHttpHeaders;
 import com.jbh.gateway.internal.domains.BaseApiGatewayClient;
 import java.util.Map;
@@ -16,6 +17,13 @@ public class JbhUserGatewayClientImpl extends BaseApiGatewayClient implements Jb
   public JbhUserGatewayClientImpl(final JbhGatewayClientBuilder hostConfig)
       throws JbhGatewayException {
     super(hostConfig);
+  }
+
+  /** Uses the given transport. For tests. */
+  public JbhUserGatewayClientImpl(
+      final JbhGatewayClientBuilder hostConfig, final JbhHttpClientAdapter httpClientAdapter)
+      throws JbhGatewayException {
+    super(hostConfig, httpClientAdapter);
   }
 
   @Override

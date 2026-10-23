@@ -4,13 +4,12 @@ import static com.jbh.gateway.internal.core.http.model.JbhHttpHeaders.REQ_SOURCE
 
 import com.jbh.gateway.client.JbhGatewayClientBuilder;
 import com.jbh.gateway.client.JbhGatewayException;
-import com.jbh.gateway.internal.JbhGatewayInternalClientImpl;
-import com.jbh.gateway.internal.JbhGatewayInternalClient;
-import com.jbh.gateway.internal.config.JbhHttpClientConfig;
-import com.jbh.gateway.internal.core.http.AdapterType;
-import com.jbh.gateway.internal.core.http.exception.HttpClientException;
-import com.jbh.gateway.internal.core.http.model.JbhHttpHeaders;
 import com.jbh.gateway.client.JbhHttpResponse;
+import com.jbh.gateway.internal.JbhGatewayInternalClientImpl;
+import com.jbh.gateway.internal.config.JbhHttpClientConfig;
+import com.jbh.gateway.internal.core.http.JbhHttpClientAdapter;
+import com.jbh.gateway.internal.core.http.adapter.NativeHttpClientAdapter;
+import com.jbh.gateway.internal.core.http.model.JbhHttpHeaders;
 import com.jbh.gateway.internal.core.validators.JbhHttpValidator;
 import com.jbh.gateway.internal.core.validators.JbhHttpValidatorImpl;
 import java.io.IOException;
@@ -18,11 +17,10 @@ import java.net.ConnectException;
 import java.net.http.HttpTimeoutException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 
 public class BaseApiGatewayClient {
   protected final JbhHttpValidator validator;
-  private final JbhGatewayInternalClient jbhGatewayClient;
+  private final JbhGatewayInternalClientImpl jbhGatewayClient;
   private final JbhGatewayClientBuilder gatewayConfig;
   private static final String JBH_API_GATEWAY_PREFIX = "/jbh-api";
 
@@ -31,18 +29,23 @@ public class BaseApiGatewayClient {
   public static final String TIMEOUT = "TIMEOUT";
   public static final String IO_ERROR = "IO_ERROR";
   public static final String INTERRUPTED = "INTERRUPTED";
-  public static final String UNKNOWN_ERROR = "UNKNOWN_ERROR";
 
   protected Map<String,String> callerConfigHeaders = new HashMap<>();
 
   public BaseApiGatewayClient(JbhGatewayClientBuilder gatewayConfig) throws JbhGatewayException {
-    this(gatewayConfig, new JbhHttpValidatorImpl());
+    this(gatewayConfig, null);
   }
 
-  public BaseApiGatewayClient(JbhGatewayClientBuilder gatewayConfig, JbhHttpValidator validator)
+  /**
+   * @param gatewayConfig the caller configuration
+   * @param httpClientAdapter the transport. Tests pass their own. {@code null} uses {@link
+   *     NativeHttpClientAdapter}.
+   */
+  public BaseApiGatewayClient(
+      JbhGatewayClientBuilder gatewayConfig, JbhHttpClientAdapter httpClientAdapter)
       throws JbhGatewayException {
     this.gatewayConfig = gatewayConfig;
-    this.validator = validator;
+    this.validator = new JbhHttpValidatorImpl();
     JbhHttpClientConfig httpClientConfig = JbhHttpClientConfig.defaultConfig();
     if (this.gatewayConfig.getConnectTimeout() != null) {
       httpClientConfig.setConnectTimeout(this.gatewayConfig.getConnectTimeout());
@@ -64,8 +67,10 @@ public class BaseApiGatewayClient {
 
     validator.vaildateClientSourceHeader(JbhHttpHeaders.fromMap(callerConfigHeaders));
 
+    JbhHttpClientAdapter adapter =
+        httpClientAdapter != null ? httpClientAdapter : new NativeHttpClientAdapter(httpClientConfig);
     this.jbhGatewayClient =
-        new JbhGatewayInternalClientImpl(getGatewayHostUrl(), AdapterType.NATIVE, httpClientConfig);
+        new JbhGatewayInternalClientImpl(getGatewayHostUrl(), httpClientConfig, adapter);
   }
 
   protected String getGatewayHostUrl() {
@@ -93,7 +98,7 @@ public class BaseApiGatewayClient {
       throws JbhGatewayException {
     String fullPath = JBH_API_GATEWAY_PREFIX + normalizePath(path);
     return callGateway(
-        "GET", fullPath, () -> jbhGatewayClient.getForObject(fullPath, clientHttpHeaders, responseType));
+        "GET", fullPath, () -> jbhGatewayClient.get(fullPath, clientHttpHeaders, responseType));
   }
 
   protected JbhHttpResponse executePost(String path, String jsonBody, JbhHttpHeaders clientHttpHeaders)
@@ -116,18 +121,24 @@ public class BaseApiGatewayClient {
     return callGateway("DELETE", fullPath, () -> jbhGatewayClient.delete(fullPath, clientHttpHeaders));
   }
 
+  /** One call to the gateway. It throws the network error of the adapter as it is. */
+  @FunctionalInterface
+  private interface GatewayCall {
+    JbhHttpResponse send() throws IOException, InterruptedException;
+  }
+
   /** Runs one call. A request with no HTTP response becomes a {@link JbhGatewayException}. */
-  private JbhHttpResponse callGateway(String method, String path, Supplier<JbhHttpResponse> call)
+  private JbhHttpResponse callGateway(String method, String path, GatewayCall call)
       throws JbhGatewayException {
     try {
-      return call.get();
-    } catch (HttpClientException e) {
-      throw toGatewayException(method + " " + path, e.getCause() != null ? e.getCause() : e);
+      return call.send();
+    } catch (IOException | InterruptedException e) {
+      throw toGatewayException(method + " " + path, e);
     }
   }
 
   /** The single place that maps network errors to error codes. */
-  static JbhGatewayException toGatewayException(String request, Throwable error) {
+  static JbhGatewayException toGatewayException(String request, Exception error) {
     if (error instanceof InterruptedException) {
       Thread.currentThread().interrupt();
       return new JbhGatewayException("Request was interrupted: " + request, INTERRUPTED, null, error);
@@ -138,9 +149,6 @@ public class BaseApiGatewayClient {
     if (error instanceof HttpTimeoutException) {
       return new JbhGatewayException("Request timed out: " + request, TIMEOUT, null, error);
     }
-    if (error instanceof IOException) {
-      return new JbhGatewayException("IO error: " + request, IO_ERROR, null, error);
-    }
-    return new JbhGatewayException("Request failed: " + request, UNKNOWN_ERROR, null, error);
+    return new JbhGatewayException("IO error: " + request, IO_ERROR, null, error);
   }
 }

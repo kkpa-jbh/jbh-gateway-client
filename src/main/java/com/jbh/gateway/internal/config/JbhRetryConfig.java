@@ -25,8 +25,6 @@ public final class JbhRetryConfig {
     private final Duration maxDelay;
     private final double backoffMultiplier;
     private final Set<Integer> retryableStatusCodes;
-    private final boolean retryOnTimeout;
-    private final boolean retryOnConnectionFailure;
 
     private JbhRetryConfig(Builder builder) {
         this.maxAttempts = builder.maxAttempts;
@@ -34,8 +32,6 @@ public final class JbhRetryConfig {
         this.maxDelay = builder.maxDelay;
         this.backoffMultiplier = builder.backoffMultiplier;
         this.retryableStatusCodes = Set.copyOf(builder.retryableStatusCodes);
-        this.retryOnTimeout = builder.retryOnTimeout;
-        this.retryOnConnectionFailure = builder.retryOnConnectionFailure;
     }
 
     public static Builder builder() {
@@ -70,14 +66,6 @@ public final class JbhRetryConfig {
         return retryableStatusCodes;
     }
 
-    public boolean isRetryOnTimeout() {
-        return retryOnTimeout;
-    }
-
-    public boolean isRetryOnConnectionFailure() {
-        return retryOnConnectionFailure;
-    }
-
     /**
      * Delay before an attempt. The first retry (attempt 2) waits {@code initialDelay}. Each later
      * retry waits {@code backoffMultiplier} times longer, up to {@code maxDelay}.
@@ -93,10 +81,6 @@ public final class JbhRetryConfig {
         Duration calculatedDelay = Duration.ofMillis(delayMillis);
         
         return calculatedDelay.compareTo(maxDelay) > 0 ? maxDelay : calculatedDelay;
-    }
-
-    public boolean shouldRetry(int attemptNumber) {
-        return attemptNumber < maxAttempts;
     }
 
     /** A retryable status code is retried only for idempotent methods. A POST may have run already. */
@@ -116,26 +100,6 @@ public final class JbhRetryConfig {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        JbhRetryConfig that = (JbhRetryConfig) o;
-        return maxAttempts == that.maxAttempts &&
-                Double.compare(that.backoffMultiplier, backoffMultiplier) == 0 &&
-                retryOnTimeout == that.retryOnTimeout &&
-                retryOnConnectionFailure == that.retryOnConnectionFailure &&
-                Objects.equals(initialDelay, that.initialDelay) &&
-                Objects.equals(maxDelay, that.maxDelay) &&
-                Objects.equals(retryableStatusCodes, that.retryableStatusCodes);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(maxAttempts, initialDelay, maxDelay, backoffMultiplier,
-                retryableStatusCodes, retryOnTimeout, retryOnConnectionFailure);
-    }
-
-    @Override
     public String toString() {
         return "RetryConfig{" +
                 "maxAttempts=" + maxAttempts +
@@ -143,8 +107,6 @@ public final class JbhRetryConfig {
                 ", maxDelay=" + maxDelay +
                 ", backoffMultiplier=" + backoffMultiplier +
                 ", retryableStatusCodes=" + retryableStatusCodes +
-                ", retryOnTimeout=" + retryOnTimeout +
-                ", retryOnConnectionFailure=" + retryOnConnectionFailure +
                 '}';
     }
 
@@ -154,8 +116,6 @@ public final class JbhRetryConfig {
         private Duration maxDelay = Duration.ofSeconds(10);
         private double backoffMultiplier = 2.0;
         private Set<Integer> retryableStatusCodes = Set.of(502, 503, 504, 429);
-        private boolean retryOnTimeout = true;
-        private boolean retryOnConnectionFailure = true;
 
         public Builder maxAttempts(int maxAttempts) {
             if (maxAttempts < 1) {
@@ -185,16 +145,6 @@ public final class JbhRetryConfig {
 
         public Builder retryableStatusCodes(Set<Integer> retryableStatusCodes) {
             this.retryableStatusCodes = Objects.requireNonNull(retryableStatusCodes, "Retryable status codes cannot be null");
-            return this;
-        }
-
-        public Builder retryOnTimeout(boolean retryOnTimeout) {
-            this.retryOnTimeout = retryOnTimeout;
-            return this;
-        }
-
-        public Builder retryOnConnectionFailure(boolean retryOnConnectionFailure) {
-            this.retryOnConnectionFailure = retryOnConnectionFailure;
             return this;
         }
 
