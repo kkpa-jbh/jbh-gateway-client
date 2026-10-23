@@ -40,10 +40,10 @@ public class JbhGatewayInternalClientImpl {
     this.defaultTimeout = httpClientConfig.getRequestTimeout();
     this.defaultJbhHttpHeaders = JbhHttpHeaders.empty().withAll(httpClientConfig.getCustomHeaders());
 
-    log.info(
-        "Gateway client initialized with base URL: {}, headers: {}",
+    log.debug(
+        "Gateway client initialized with base URL: {}, default header names: {}",
         this.baseUrl,
-        defaultJbhHttpHeaders);
+        defaultJbhHttpHeaders.getNames());
   }
 
   // Only GET adds the default headers (source service). POST, PUT and DELETE never did.
@@ -66,7 +66,6 @@ public class JbhGatewayInternalClientImpl {
 
   public JbhHttpResponse post(String path, String jsonBody, JbhHttpHeaders headers)
       throws IOException, InterruptedException {
-    log.info("Executing POST request to: {}", path);
     JbhHttpRequest request =
         JbhHttpRequest.post(buildUrl(path))
             .jsonBody(jsonBody)

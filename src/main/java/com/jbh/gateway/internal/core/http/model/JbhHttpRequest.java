@@ -104,7 +104,7 @@ public final class JbhHttpRequest {
         return "HttpRequest{" +
                 "method=" + method +
                 ", uri=" + uri +
-                ", headers=" + headers +
+                ", headerNames=" + headers.getNames() +
                 ", body=" + body.map(b -> b.length() > 100 ? b.substring(0, 100) + "..." : b) +
                 ", timeout=" + timeout +
                 '}';

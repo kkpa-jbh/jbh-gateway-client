@@ -34,9 +34,10 @@ public class NativeHttpClientAdapter implements JbhHttpClientAdapter {
                 config.isFollowRedirects() ? HttpClient.Redirect.NORMAL : HttpClient.Redirect.NEVER)
             .version(config.isEnableHttp2() ? HttpClient.Version.HTTP_2 : HttpClient.Version.HTTP_1_1)
             .build();
-    log.info("Initialized Native HTTP Client adapter with config: {}", config);
+    log.debug("Initialized Native HTTP Client adapter with config: {}", config);
   }
 
+  // Per-request lines are DEBUG. Retries and final failures are WARN. Never log header values.
   @Override
   public JbhHttpResponse execute(JbhHttpRequest request) throws IOException, InterruptedException {
     JbhHttpMethod method = request.getMethod();
@@ -45,34 +46,42 @@ public class NativeHttpClientAdapter implements JbhHttpClientAdapter {
 
     for (int attempt = 1; ; attempt++) {
       if (attempt > 1) {
-        long delayMillis = retryConfig.calculateDelay(attempt).toMillis();
-        log.info(
-            "Retrying request (attempt {}/{}) after {} ms delay", attempt, maxAttempts, delayMillis);
-        Thread.sleep(delayMillis);
+        Thread.sleep(retryConfig.calculateDelay(attempt).toMillis());
       }
 
-      log.info("Executing request: {} {}", method, request.getUri());
+      log.debug("Executing request: {} {} (attempt {}/{})", method, request.getUri(), attempt, maxAttempts);
       JbhHttpResponse response;
       try {
-        response = convertResponse(httpClient.send(nativeRequest, HttpResponse.BodyHandlers.ofString()));
+        response =
+            convertResponse(httpClient.send(nativeRequest, HttpResponse.BodyHandlers.ofString()));
       } catch (IOException e) {
         if (attempt >= maxAttempts || !retryConfig.shouldRetryForException(method, e)) {
+          log.warn(
+              "Request {} {} failed after {} attempt(s): {}", method, request.getUri(), attempt, e.toString());
           throw e;
         }
-        log.debug("Request failed on attempt {}/{}, will retry: {}", attempt, maxAttempts, e.toString());
+        log.warn(
+            "Request {} {} failed on attempt {}/{}, will retry: {}",
+            method,
+            request.getUri(),
+            attempt,
+            maxAttempts,
+            e.toString());
         continue;
       }
 
       if (attempt < maxAttempts && retryConfig.shouldRetryForStatusCode(method, response.getStatusCode())) {
-        log.info(
-            "Received retryable status code {} for attempt {}/{}",
+        log.warn(
+            "Request {} {} returned {} on attempt {}/{}, will retry",
+            method,
+            request.getUri(),
             response.getStatusCode(),
             attempt,
             maxAttempts);
         continue;
       }
 
-      log.info("Request completed with status {}", response.getStatusCode());
+      log.debug("Request {} {} completed with status {}", method, request.getUri(), response.getStatusCode());
       return response;
     }
   }
