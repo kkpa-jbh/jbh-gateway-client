@@ -6,26 +6,19 @@ Key Features:
 4. Comprehensive Coverage:
    - Basic GET requests with headers validation
    - POST requests with JSON body and custom configuration
-   - Asynchronous requests with timing validation
-   - Error handling (404, 500, connection errors, timeouts)
-   - HTTPS/SSL verification
-   - Large response handling
-   - Async error scenarios
+   - Error handling (404 status, timeouts)
 
 Benefits over Mock Tests:
 
 - Real HTTP Stack Testing - Validates actual network communication
 - SSL/TLS Validation - Tests HTTPS connections
-- Performance Measurement - Verifies async operations are truly parallel
 - Real Error Conditions - Tests genuine network failures and timeouts
 - End-to-End Validation - Proves the HTTP client works with real servers
 
 Usage:
 
+# Regular builds (mvn test) exclude them. See excludedGroups in pom.xml.
 # Run only integration tests
-mvn test -Dgroups=integration
-
-# Exclude integration tests from regular builds
-mvn test -DexcludedGroups=integration
+mvn test -Dgroups=integration -DexcludedGroups=
 
 This gives you both testing approaches: fast, reliable unit tests with mocks AND comprehensive integration tests with real network calls.

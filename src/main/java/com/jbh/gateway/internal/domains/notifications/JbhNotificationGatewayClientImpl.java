@@ -4,6 +4,7 @@ import com.jbh.gateway.client.JbhGatewayClientBuilder;
 import com.jbh.gateway.client.JbhGatewayException;
 import com.jbh.gateway.client.JbhHttpResponse;
 import com.jbh.gateway.client.notifications.JbhNotificationGatewayClient;
+import com.jbh.gateway.internal.core.http.JbhHttpClientAdapter;
 import com.jbh.gateway.internal.core.http.model.JbhHttpHeaders;
 import com.jbh.gateway.internal.core.mappers.JacksonJsonUtil;
 import com.jbh.gateway.internal.domains.BaseApiGatewayClient;
@@ -21,6 +22,13 @@ public class JbhNotificationGatewayClientImpl extends BaseApiGatewayClient
   public JbhNotificationGatewayClientImpl(JbhGatewayClientBuilder hostConfig)
       throws JbhGatewayException {
     super(hostConfig);
+  }
+
+  /** Uses the given transport. For tests. */
+  public JbhNotificationGatewayClientImpl(
+      JbhGatewayClientBuilder hostConfig, JbhHttpClientAdapter httpClientAdapter)
+      throws JbhGatewayException {
+    super(hostConfig, httpClientAdapter);
   }
 
   @Override

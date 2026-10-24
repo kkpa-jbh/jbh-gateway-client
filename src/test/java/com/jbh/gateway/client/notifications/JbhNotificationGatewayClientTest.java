@@ -21,8 +21,8 @@ public class JbhNotificationGatewayClientTest {
 
     static JbhNotificationGatewayClient notificationClient;
 
-    static final String GOOD_TOKEN =
-        "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIyYWZiZGNmYy1lYmM2LTQxODAtOGE2My02MDljZjhmMTk4YmEiLCJpYXQiOjE3NTc4NDQyNjksImV4cCI6MTc1ODQ0OTA2OX0.r1qQJATRVVk9mw5twn66c-M-aszjgZ96H9cmsAV9W9-STEj0Da80vb_J3Zm8M8ZAac_1Lt8wMTdAedpaDV5hIg";
+    // Not a real JWT. The client only checks the "Bearer " prefix.
+    static final String GOOD_TOKEN = "Bearer fake.jwt.token";
 
     @BeforeAll
     public static void setup() {

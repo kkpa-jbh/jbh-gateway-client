@@ -49,6 +49,10 @@ src/main/java/com/jbh/gateway/
     │   └── notifications/
     │       └── JbhNotificationGatewayClientImpl.java
     └── core/                              # HTTP infrastructure
+        └── http/
+            ├── JbhHttpClientAdapter.java      # Transport seam: execute(request). Tests swap it.
+            └── adapter/
+                └── NativeHttpClientAdapter.java   # java.net.http + retries
 
 src/test/java/com/jbh/gateway/
 ├── client/                          # CLIENT TESTS (simulates library callers)
@@ -58,9 +62,6 @@ src/test/java/com/jbh/gateway/
 │       └── JbhNotificationGatewayClientTest.java
 │
 └── internal/                        # INTERNAL TESTS (cross-client, infrastructure)
-    ├── http/
-    │   ├── HttpClientFactoryTest.java
-    │   └── MockHttpClientAdapter.java
     └── integration/
         └── JbhGatewayClientIntegrationTest.java
 ```
@@ -168,11 +169,13 @@ The base class provides these protected methods:
 | Method | Description |
 |--------|-------------|
 | `executeGet(path, headers)` | GET request to `/jbh-api{path}` |
+| `executeGet(path, headers, type)` | GET request; a 2xx JSON body is also read as `type` (`getBodyAs(type)`) |
 | `executePost(path, body, headers)` | POST request with JSON body |
 | `executePut(path, body, headers)` | PUT request with JSON body |
 | `executeDelete(path, headers)` | DELETE request |
 
 All paths are automatically prefixed with `/jbh-api`.
+All methods throw `JbhGatewayException` when the call gets no HTTP response (see "Exception Handling").
 
 ---
 
@@ -204,12 +207,36 @@ response.getHeaders().getFirst("X-Custom-Header");
 ```java
 try {
     var response = client.someMethod(headers);
+    if (!response.isSuccessful()) {
+        // The gateway answered with an error status (4xx, 5xx). No exception.
+    }
 } catch (JbhGatewayException e) {
-    String errorCode = e.getErrorCode();        // e.g., "CONNECTION_FAILED"
-    Integer httpStatus = e.getHttpStatusCode(); // e.g., 503
+    String errorCode = e.getErrorCode(); // e.g., "CONNECTION_FAILED"
     String message = e.getMessage();
 }
 ```
+
+An HTTP error status is **not** an exception. You get a `JbhHttpResponse` with that status.
+A `JbhGatewayException` means the call got no HTTP response, or was never sent:
+
+| `getErrorCode()` | When |
+|------------------|------|
+| `null` | Missing or invalid `Authorization` header, or missing source service. Nothing was sent. |
+| `SERIALIZATION_ERROR` | The request body could not be written as JSON. Nothing was sent. |
+| `CONNECTION_FAILED` | The client could not connect to the gateway (`java.net.ConnectException`). |
+| `TIMEOUT` | No response within `connectTimeout` or `requestTimeout`. |
+| `IO_ERROR` | Any other network error. |
+| `INTERRUPTED` | The thread was interrupted. The interrupt flag is set again. |
+
+`getHttpStatusCode()` is `null` for all of these. The original error is `getCause()`.
+The codes are mapped in one place: `BaseApiGatewayClient.toGatewayException`.
+
+### Retries
+
+- `GET`, `PUT`, `DELETE`: retried on `502`, `503`, `504`, `429`, a timeout, or a network error.
+- `POST`, `PATCH`: retried only when the connection failed (the request was never sent).
+  A `POST` can have side effects, such as an email. It is never sent twice.
+- Up to 3 attempts. Waits 500 ms, then 1 s.
 
 ---
 
@@ -325,9 +352,16 @@ mvn test -Dtest=JbhNotificationGatewayClientTest
 # Run all client tests
 mvn test -Dtest="com.jbh.gateway.client.**"
 
-# Run internal/integration tests
+# Run internal tests
 mvn test -Dtest="com.jbh.gateway.internal.**"
+
+# Integration tests call httpbin.org. mvn test skips them. Run them:
+mvn test -Dgroups=integration -DexcludedGroups=
 ```
+
+Retry and error tests use `MockWebServer` (a local server, no network).
+To swap the transport in a test, pass a `JbhHttpClientAdapter` lambda to a domain client:
+`new JbhUserGatewayClientImpl(config, request -> { throw new ConnectException(); })`.
 
 ### Test Checklist for New Clients
 

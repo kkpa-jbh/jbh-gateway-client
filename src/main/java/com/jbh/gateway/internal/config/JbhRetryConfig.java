@@ -1,9 +1,13 @@
 package com.jbh.gateway.internal.config;
 
+import com.jbh.gateway.internal.core.http.model.JbhHttpMethod;
+import java.io.IOException;
+import java.net.ConnectException;
+import java.net.http.HttpConnectTimeoutException;
 import java.time.Duration;
+import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Predicate;
 
 /**
  * Configuration for retry behavior in HTTP client adapters.
@@ -12,14 +16,15 @@ import java.util.function.Predicate;
  */
 public final class JbhRetryConfig {
 
+    // Sending these twice has the same effect as sending them once.
+    private static final Set<JbhHttpMethod> IDEMPOTENT_METHODS =
+            EnumSet.of(JbhHttpMethod.GET, JbhHttpMethod.PUT, JbhHttpMethod.DELETE, JbhHttpMethod.HEAD);
+
     private final int maxAttempts;
     private final Duration initialDelay;
     private final Duration maxDelay;
     private final double backoffMultiplier;
     private final Set<Integer> retryableStatusCodes;
-    private final Predicate<Throwable> retryableExceptions;
-    private final boolean retryOnTimeout;
-    private final boolean retryOnConnectionFailure;
 
     private JbhRetryConfig(Builder builder) {
         this.maxAttempts = builder.maxAttempts;
@@ -27,9 +32,6 @@ public final class JbhRetryConfig {
         this.maxDelay = builder.maxDelay;
         this.backoffMultiplier = builder.backoffMultiplier;
         this.retryableStatusCodes = Set.copyOf(builder.retryableStatusCodes);
-        this.retryableExceptions = builder.retryableExceptions;
-        this.retryOnTimeout = builder.retryOnTimeout;
-        this.retryOnConnectionFailure = builder.retryOnConnectionFailure;
     }
 
     public static Builder builder() {
@@ -64,59 +66,37 @@ public final class JbhRetryConfig {
         return retryableStatusCodes;
     }
 
-    public Predicate<Throwable> getRetryableExceptions() {
-        return retryableExceptions;
-    }
-
-    public boolean isRetryOnTimeout() {
-        return retryOnTimeout;
-    }
-
-    public boolean isRetryOnConnectionFailure() {
-        return retryOnConnectionFailure;
-    }
-
+    /**
+     * Delay before an attempt. The first retry (attempt 2) waits {@code initialDelay}. Each later
+     * retry waits {@code backoffMultiplier} times longer, up to {@code maxDelay}.
+     *
+     * @param attemptNumber the attempt about to start (2 for the first retry)
+     */
     public Duration calculateDelay(int attemptNumber) {
-        if (attemptNumber <= 1) {
+        if (attemptNumber <= 2) {
             return initialDelay;
         }
-        
-        long delayMillis = (long) (initialDelay.toMillis() * Math.pow(backoffMultiplier, attemptNumber - 1));
+
+        long delayMillis = (long) (initialDelay.toMillis() * Math.pow(backoffMultiplier, attemptNumber - 2));
         Duration calculatedDelay = Duration.ofMillis(delayMillis);
         
         return calculatedDelay.compareTo(maxDelay) > 0 ? maxDelay : calculatedDelay;
     }
 
-    public boolean shouldRetry(int attemptNumber) {
-        return attemptNumber < maxAttempts;
+    /** A retryable status code is retried only for idempotent methods. A POST may have run already. */
+    public boolean shouldRetryForStatusCode(JbhHttpMethod method, int statusCode) {
+        return IDEMPOTENT_METHODS.contains(method) && retryableStatusCodes.contains(statusCode);
     }
 
-    public boolean shouldRetryForStatusCode(int statusCode) {
-        return retryableStatusCodes.contains(statusCode);
-    }
-
-    public boolean shouldRetryForException(Throwable exception) {
-        return retryableExceptions.test(exception);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        JbhRetryConfig that = (JbhRetryConfig) o;
-        return maxAttempts == that.maxAttempts &&
-                Double.compare(that.backoffMultiplier, backoffMultiplier) == 0 &&
-                retryOnTimeout == that.retryOnTimeout &&
-                retryOnConnectionFailure == that.retryOnConnectionFailure &&
-                Objects.equals(initialDelay, that.initialDelay) &&
-                Objects.equals(maxDelay, that.maxDelay) &&
-                Objects.equals(retryableStatusCodes, that.retryableStatusCodes);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(maxAttempts, initialDelay, maxDelay, backoffMultiplier,
-                retryableStatusCodes, retryOnTimeout, retryOnConnectionFailure);
+    /**
+     * A failed connection is always retried: the request was never sent. Other IO errors, such as
+     * a request timeout, are retried only for idempotent methods.
+     */
+    public boolean shouldRetryForException(JbhHttpMethod method, Throwable exception) {
+        if (exception instanceof ConnectException || exception instanceof HttpConnectTimeoutException) {
+            return true;
+        }
+        return IDEMPOTENT_METHODS.contains(method) && exception instanceof IOException;
     }
 
     @Override
@@ -127,8 +107,6 @@ public final class JbhRetryConfig {
                 ", maxDelay=" + maxDelay +
                 ", backoffMultiplier=" + backoffMultiplier +
                 ", retryableStatusCodes=" + retryableStatusCodes +
-                ", retryOnTimeout=" + retryOnTimeout +
-                ", retryOnConnectionFailure=" + retryOnConnectionFailure +
                 '}';
     }
 
@@ -138,12 +116,6 @@ public final class JbhRetryConfig {
         private Duration maxDelay = Duration.ofSeconds(10);
         private double backoffMultiplier = 2.0;
         private Set<Integer> retryableStatusCodes = Set.of(502, 503, 504, 429);
-        private Predicate<Throwable> retryableExceptions = throwable -> 
-                throwable instanceof java.net.ConnectException ||
-                throwable instanceof java.net.SocketTimeoutException ||
-                throwable instanceof java.io.IOException;
-        private boolean retryOnTimeout = true;
-        private boolean retryOnConnectionFailure = true;
 
         public Builder maxAttempts(int maxAttempts) {
             if (maxAttempts < 1) {
@@ -173,21 +145,6 @@ public final class JbhRetryConfig {
 
         public Builder retryableStatusCodes(Set<Integer> retryableStatusCodes) {
             this.retryableStatusCodes = Objects.requireNonNull(retryableStatusCodes, "Retryable status codes cannot be null");
-            return this;
-        }
-
-        public Builder retryableExceptions(Predicate<Throwable> retryableExceptions) {
-            this.retryableExceptions = Objects.requireNonNull(retryableExceptions, "Retryable exceptions predicate cannot be null");
-            return this;
-        }
-
-        public Builder retryOnTimeout(boolean retryOnTimeout) {
-            this.retryOnTimeout = retryOnTimeout;
-            return this;
-        }
-
-        public Builder retryOnConnectionFailure(boolean retryOnConnectionFailure) {
-            this.retryOnConnectionFailure = retryOnConnectionFailure;
             return this;
         }
 

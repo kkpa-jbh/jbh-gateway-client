@@ -18,11 +18,9 @@ mvn test -Dtest=JbhUserGatewayClientTest
 # Run all client tests
 mvn test -Dtest="com.jbh.gateway.client.**"
 
-# Run integration tests only (requires network)
-mvn test -Dgroups=integration
-
-# Exclude integration tests
-mvn test -DexcludedGroups=integration
+# Integration tests (httpbin.org, need network) are excluded by default (pom.xml).
+# Run only them:
+mvn test -Dgroups=integration -DexcludedGroups=
 ```
 
 ## Architecture
