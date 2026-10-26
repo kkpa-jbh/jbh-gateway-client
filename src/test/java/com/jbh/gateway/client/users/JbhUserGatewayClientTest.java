@@ -90,4 +90,60 @@ public class JbhUserGatewayClientTest {
       throw new RuntimeException(e);
     }
   }
+
+  @Test
+  public void shouldAskIamForTheUserGroupWithTheCallerToken()
+      throws IOException, InterruptedException {
+    UUID groupId = UUID.randomUUID();
+    try (MockWebServer server = new MockWebServer()) {
+      server.enqueue(new MockResponse().setResponseCode(200).setBody("{}"));
+      server.start();
+      JbhUserGatewayClient client =
+          JbhGatewayClientBuilder.builder()
+              .baseUrl(server.url("/").toString())
+              .sourceService("test-service")
+              .build()
+              .getUserClient();
+
+      JbhHttpResponse response =
+          client.findUserGroup(groupId, Map.of("Authorization", GOOD_TOKEN));
+
+      assertEquals(200, response.getStatusCode());
+
+      RecordedRequest request = server.takeRequest();
+      assertEquals("GET", request.getMethod());
+      assertEquals("/jbh-api/user-groups/" + groupId, request.getPath());
+      assertEquals(GOOD_TOKEN, request.getHeader("Authorization"));
+    } catch (JbhGatewayException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Test
+  public void shouldReturnTheForbiddenAnswerOfIamForANonMember()
+      throws IOException, JbhGatewayException {
+    try (MockWebServer server = new MockWebServer()) {
+      server.enqueue(new MockResponse().setResponseCode(403));
+      server.start();
+      JbhUserGatewayClient client =
+          JbhGatewayClientBuilder.builder()
+              .baseUrl(server.url("/").toString())
+              .sourceService("test-service")
+              .build()
+              .getUserClient();
+
+      JbhHttpResponse response =
+          client.findUserGroup(UUID.randomUUID(), Map.of("Authorization", GOOD_TOKEN));
+
+      assertEquals(403, response.getStatusCode());
+      Assertions.assertFalse(response.isSuccessful());
+    }
+  }
+
+  @Test
+  public void shouldThrowExceptionWhenGroupIdIsNull() {
+    Assertions.assertThrows(
+        NullPointerException.class,
+        () -> userClient.findUserGroup(null, Map.of("Authorization", GOOD_TOKEN)));
+  }
 }

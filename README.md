@@ -24,6 +24,14 @@ if (response.isSuccessful()) {
 }
 ```
 
+Client methods:
+
+| Client | Method | Gateway call | Used by |
+|--------|--------|--------------|---------|
+| `getUserClient()` | `findUserId(headers)` | `GET /jbh-api/users/find-user-id` | `jbh-personal-finance` |
+| `getUserClient()` | `findUserGroup(groupId, headers)` | `GET /jbh-api/user-groups/{groupId}`. `200` member, `403` not a member, `404` no group | `jbh-personal-finance` (team preferences) |
+| `getNotificationClient()` | `sendNotification(...)` | `POST /jbh-api/notifications/v1` | `jbh-iam` |
+
 ---
 
 ## Architecture Overview
