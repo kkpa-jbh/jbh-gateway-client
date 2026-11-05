@@ -235,6 +235,7 @@ A `JbhGatewayException` means the call got no HTTP response, or was never sent:
 | `TIMEOUT` | No response within `connectTimeout` or `requestTimeout`. |
 | `IO_ERROR` | Any other network error. |
 | `INTERRUPTED` | The thread was interrupted. The interrupt flag is set again. |
+| `CIRCUIT_OPEN` | The circuit breaker is open. Nothing was sent. See "Circuit breaker". |
 
 `getHttpStatusCode()` is `null` for all of these. The original error is `getCause()`.
 The codes are mapped in one place: `BaseApiGatewayClient.toGatewayException`.
@@ -246,6 +247,38 @@ The codes are mapped in one place: `BaseApiGatewayClient.toGatewayException`.
   A `POST` can have side effects, such as an email. It is never sent twice.
 - Up to 3 attempts. Waits 500 ms, then 1 s.
 
+### Circuit breaker
+
+Each domain client has one circuit breaker (Resilience4j). It wraps the retries, so one call with
+all its retries counts once.
+
+- **Failure:** no HTTP response (connection error, timeout), or status `502`, `503`, `504`.
+  A `4xx` never counts. An interrupt never counts.
+- **Opens** when at least 10 of the last 20 calls were made and 50% or more failed.
+- **While open**, calls fail at once with `CIRCUIT_OPEN`. Nothing is sent.
+- **After 30 s**, the next call moves it to half-open: 3 test calls decide if it closes or opens again.
+- Every state change is logged at `WARN`.
+- Settings: `JbhCircuitBreakerConfig` (defaults in its `Builder`).
+
+The state lives in the client instance. **Create each domain client once and reuse it.**
+A new client per request gets a new, closed breaker, so it never opens.
+Each service instance has its own breaker. That is fine: it protects only the caller.
+
+**Name:** `<sourceService>.<domain>`, for example `JBH_FINANCE_API.User` or `JBH_IAM_API.Notification`.
+
+**Metrics:** pass a Micrometer `MeterRegistry` to the builder (`meterRegistry(...)`). The breaker then
+publishes the standard Resilience4j metrics, tagged `name`. In Prometheus:
+
+| Metric | Meaning |
+|--------|---------|
+| `resilience4j_circuitbreaker_state{state="closed\|open\|half_open\|..."}` | `1` for the current state |
+| `resilience4j_circuitbreaker_calls_seconds_count{kind="successful\|failed\|ignored"}` | Calls by result |
+| `resilience4j_circuitbreaker_not_permitted_calls_total` | Calls rejected while open |
+| `resilience4j_circuitbreaker_failure_rate` | Failure rate in %, `-1` until enough calls |
+| `resilience4j_circuitbreaker_buffered_calls{kind}` | Calls in the sliding window |
+
+Without a `MeterRegistry` the breaker still works. It only publishes no metrics.
+
 ---
 
 ## Configuration
@@ -256,6 +289,7 @@ var builder = JbhGatewayClientBuilder.builder()
     .sourceService("order-service")           // Sets JBH-XXX-REQ-SOURCE header
     .connectTimeout(Duration.ofSeconds(5))    // Default: 10s
     .requestTimeout(Duration.ofSeconds(15))   // Default: 30s
+    .meterRegistry(meterRegistry)             // Optional: circuit breaker metrics
     .build();
 ```
 

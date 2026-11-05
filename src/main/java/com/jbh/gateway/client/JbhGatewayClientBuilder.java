@@ -4,6 +4,7 @@ import com.jbh.gateway.client.notifications.JbhNotificationGatewayClient;
 import com.jbh.gateway.client.users.JbhUserGatewayClient;
 import com.jbh.gateway.internal.domains.notifications.JbhNotificationGatewayClientImpl;
 import com.jbh.gateway.internal.domains.users.JbhUserGatewayClientImpl;
+import io.micrometer.core.instrument.MeterRegistry;
 import java.time.Duration;
 
 public class JbhGatewayClientBuilder {
@@ -11,12 +12,14 @@ public class JbhGatewayClientBuilder {
   private final String sourceService;
   private final Duration connectTimeout;
   private final Duration requestTimeout;
+  private final MeterRegistry meterRegistry;
 
   private JbhGatewayClientBuilder(final Builder builder) {
     this.baseUrl = builder.baseUrl;
     this.sourceService = builder.sourceService;
     this.connectTimeout = builder.connectTimeout;
     this.requestTimeout = builder.requestTimeout;
+    this.meterRegistry = builder.meterRegistry;
   }
 
   public String getBaseUrl() {
@@ -33,6 +36,11 @@ public class JbhGatewayClientBuilder {
 
   public Duration getRequestTimeout() {
     return requestTimeout;
+  }
+
+  /** Where the circuit breaker metrics go, or {@code null} for no metrics. */
+  public MeterRegistry getMeterRegistry() {
+    return meterRegistry;
   }
 
   public JbhUserGatewayClient getUserClient() throws JbhGatewayException {
@@ -52,6 +60,7 @@ public class JbhGatewayClientBuilder {
     private String sourceService;
     private Duration connectTimeout = Duration.ofSeconds(10);
     private Duration requestTimeout = Duration.ofSeconds(30);
+    private MeterRegistry meterRegistry;
 
     public Builder baseUrl(String baseUrl) {
       this.baseUrl = baseUrl;
@@ -70,6 +79,15 @@ public class JbhGatewayClientBuilder {
 
     public Builder requestTimeout(Duration requestTimeout) {
       this.requestTimeout = requestTimeout;
+      return this;
+    }
+
+    /**
+     * Publishes the circuit breaker metrics of every client made by this builder. Optional: without
+     * it the breakers still work, but they publish no metrics.
+     */
+    public Builder meterRegistry(MeterRegistry meterRegistry) {
+      this.meterRegistry = meterRegistry;
       return this;
     }
 

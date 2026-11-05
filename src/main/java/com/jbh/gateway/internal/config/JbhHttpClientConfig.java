@@ -16,6 +16,7 @@ public final class JbhHttpClientConfig {
     private final boolean followRedirects;
     private final boolean enableHttp2;
     private final JbhRetryConfig retryConfig;
+    private final JbhCircuitBreakerConfig circuitBreakerConfig;
     private  Map<String,String> customHeaders;
 
     private JbhHttpClientConfig(Builder builder) {
@@ -24,6 +25,7 @@ public final class JbhHttpClientConfig {
         this.followRedirects = builder.followRedirects;
         this.enableHttp2 = builder.enableHttp2;
         this.retryConfig = builder.retryConfig;
+        this.circuitBreakerConfig = builder.circuitBreakerConfig;
         this.customHeaders = builder.customHeaders;
     }
 
@@ -55,6 +57,10 @@ public final class JbhHttpClientConfig {
         return retryConfig;
     }
 
+    public JbhCircuitBreakerConfig getCircuitBreakerConfig() {
+        return circuitBreakerConfig;
+    }
+
     public Map<String,String> getCustomHeaders() {
       return customHeaders;
     }
@@ -67,6 +73,7 @@ public final class JbhHttpClientConfig {
                 ", followRedirects=" + followRedirects +
                 ", enableHttp2=" + enableHttp2 +
                 ", retryConfig=" + retryConfig +
+                ", circuitBreakerConfig=" + circuitBreakerConfig +
                 '}';
     }
 
@@ -88,6 +95,7 @@ public final class JbhHttpClientConfig {
         private boolean followRedirects = true;
         private boolean enableHttp2 = true;
         private JbhRetryConfig retryConfig = JbhRetryConfig.defaultConfig();
+        private JbhCircuitBreakerConfig circuitBreakerConfig = JbhCircuitBreakerConfig.defaultConfig();
         private Map<String,String> customHeaders = new HashMap<>();
 
         public Builder connectTimeout(Duration connectTimeout) {
@@ -112,6 +120,12 @@ public final class JbhHttpClientConfig {
 
         public Builder retryConfig(JbhRetryConfig retryConfig) {
             this.retryConfig = Objects.requireNonNull(retryConfig, "Retry config cannot be null");
+            return this;
+        }
+
+        public Builder circuitBreakerConfig(JbhCircuitBreakerConfig circuitBreakerConfig) {
+            this.circuitBreakerConfig =
+                    Objects.requireNonNull(circuitBreakerConfig, "Circuit breaker config cannot be null");
             return this;
         }
 

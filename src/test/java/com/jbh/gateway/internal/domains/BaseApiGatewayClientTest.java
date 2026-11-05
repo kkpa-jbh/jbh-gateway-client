@@ -2,6 +2,7 @@ package com.jbh.gateway.internal.domains;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -10,7 +11,9 @@ import com.jbh.gateway.client.JbhGatewayClientBuilder;
 import com.jbh.gateway.client.JbhGatewayException;
 import com.jbh.gateway.client.users.JbhUserGatewayClient;
 import com.jbh.gateway.internal.core.http.JbhHttpClientAdapter;
+import com.jbh.gateway.internal.core.resilience.CircuitOpenException;
 import com.jbh.gateway.internal.domains.users.JbhUserGatewayClientImpl;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.ServerSocket;
@@ -95,5 +98,35 @@ class BaseApiGatewayClientTest {
     JbhGatewayException e = assertThrows(JbhGatewayException.class, () -> client.findUserId(AUTH));
 
     assertEquals(BaseApiGatewayClient.CONNECTION_FAILED, e.getErrorCode());
+  }
+  @Test
+  void openCircuitBecomesCircuitOpen() throws Exception {
+    JbhGatewayException e =
+        callWith(
+            request -> {
+              throw new CircuitOpenException("test-service.User", null);
+            });
+
+    assertEquals(BaseApiGatewayClient.CIRCUIT_OPEN, e.getErrorCode());
+    assertNull(e.getHttpStatusCode());
+  }
+
+  @Test
+  void publishesCircuitBreakerMetricsNamedBySourceAndDomain() throws Exception {
+    SimpleMeterRegistry meterRegistry = new SimpleMeterRegistry();
+    JbhGatewayClientBuilder builder =
+        JbhGatewayClientBuilder.builder()
+            .baseUrl("http://localhost:8080")
+            .sourceService("test-service")
+            .meterRegistry(meterRegistry)
+            .build();
+
+    new JbhUserGatewayClientImpl(builder, request -> null);
+
+    assertNotNull(
+        meterRegistry
+            .find("resilience4j.circuitbreaker.state")
+            .tag("name", "test-service.User")
+            .gauge());
   }
 }

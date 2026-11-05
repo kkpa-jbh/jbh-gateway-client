@@ -19,6 +19,11 @@ module com.jbh.gateway {
     requires com.fasterxml.jackson.datatype.jsr310;
     requires com.fasterxml.jackson.module.paramnames;
     requires org.slf4j;
+    requires io.github.resilience4j.core;
+    requires io.github.resilience4j.circuitbreaker;
+    requires io.github.resilience4j.micrometer;
+    // MeterRegistry is part of the public builder API.
+    requires transitive micrometer.core;
     requires transitive jbh.notification.contracts;
 
   // Public API exports - what microservices can use

@@ -71,6 +71,8 @@ All client methods must:
 - **Publishing**: local `mvn install`; CI publishes to GitHub Packages with `mvn -Pgithub deploy` (see `README.md` "Install and publish")
 - **Jackson**: JSON serialization
 - **java.net.http**: Native HTTP client (no external HTTP libs in main scope)
+- **Resilience4j** (`circuitbreaker`, `micrometer`): one circuit breaker per domain client, wired in `BaseApiGatewayClient`. All Resilience4j code stays in `internal/core/resilience/JbhCircuitBreakerFactory` and `CircuitBreakerHttpClientAdapter`. Rules: README "Circuit breaker"
+- **Micrometer** (`micrometer-core`): optional `MeterRegistry` on the builder for breaker metrics. The caller's BOM picks the version
 - **OkHttp MockWebServer**: Test dependency only
 
 ## System map sync (`../jbh-deploy/README.md`)

@@ -8,8 +8,11 @@ import com.jbh.gateway.client.JbhHttpResponse;
 import com.jbh.gateway.internal.JbhGatewayInternalClientImpl;
 import com.jbh.gateway.internal.config.JbhHttpClientConfig;
 import com.jbh.gateway.internal.core.http.JbhHttpClientAdapter;
+import com.jbh.gateway.internal.core.http.adapter.CircuitBreakerHttpClientAdapter;
 import com.jbh.gateway.internal.core.http.adapter.NativeHttpClientAdapter;
 import com.jbh.gateway.internal.core.http.model.JbhHttpHeaders;
+import com.jbh.gateway.internal.core.resilience.CircuitOpenException;
+import com.jbh.gateway.internal.core.resilience.JbhCircuitBreakerFactory;
 import com.jbh.gateway.internal.core.validators.JbhHttpValidator;
 import com.jbh.gateway.internal.core.validators.JbhHttpValidatorImpl;
 import java.io.IOException;
@@ -29,6 +32,11 @@ public class BaseApiGatewayClient {
   public static final String TIMEOUT = "TIMEOUT";
   public static final String IO_ERROR = "IO_ERROR";
   public static final String INTERRUPTED = "INTERRUPTED";
+  public static final String CIRCUIT_OPEN = "CIRCUIT_OPEN";
+
+  // JbhUserGatewayClientImpl -> "User". Used in the circuit breaker name.
+  private static final String DOMAIN_CLASS_PREFIX = "Jbh";
+  private static final String DOMAIN_CLASS_SUFFIX = "GatewayClientImpl";
 
   protected Map<String,String> callerConfigHeaders = new HashMap<>();
 
@@ -67,10 +75,32 @@ public class BaseApiGatewayClient {
 
     validator.vaildateClientSourceHeader(JbhHttpHeaders.fromMap(callerConfigHeaders));
 
-    JbhHttpClientAdapter adapter =
+    JbhHttpClientAdapter transport =
         httpClientAdapter != null ? httpClientAdapter : new NativeHttpClientAdapter(httpClientConfig);
+    JbhHttpClientAdapter adapter =
+        new CircuitBreakerHttpClientAdapter(
+            transport,
+            JbhCircuitBreakerFactory.create(
+                circuitBreakerName(),
+                httpClientConfig.getCircuitBreakerConfig(),
+                gatewayConfig.getMeterRegistry()));
     this.jbhGatewayClient =
         new JbhGatewayInternalClientImpl(getGatewayHostUrl(), httpClientConfig, adapter);
+  }
+
+  /**
+   * One breaker per caller and domain, for example {@code JBH_FINANCE_API.User}. Two modules of one
+   * service use different source names, so their metrics do not collide.
+   */
+  private String circuitBreakerName() {
+    String domain = getClass().getSimpleName();
+    if (domain.startsWith(DOMAIN_CLASS_PREFIX)) {
+      domain = domain.substring(DOMAIN_CLASS_PREFIX.length());
+    }
+    if (domain.endsWith(DOMAIN_CLASS_SUFFIX)) {
+      domain = domain.substring(0, domain.length() - DOMAIN_CLASS_SUFFIX.length());
+    }
+    return gatewayConfig.getSourceService() + "." + domain;
   }
 
   protected String getGatewayHostUrl() {
@@ -142,6 +172,9 @@ public class BaseApiGatewayClient {
     if (error instanceof InterruptedException) {
       Thread.currentThread().interrupt();
       return new JbhGatewayException("Request was interrupted: " + request, INTERRUPTED, null, error);
+    }
+    if (error instanceof CircuitOpenException) {
+      return new JbhGatewayException("Circuit breaker is open: " + request, CIRCUIT_OPEN, null, error);
     }
     if (error instanceof ConnectException) {
       return new JbhGatewayException("Connection failed: " + request, CONNECTION_FAILED, null, error);
