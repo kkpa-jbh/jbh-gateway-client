@@ -1,5 +1,5 @@
 # Publish: uploads the jbh-gateway-client jar to GitHub Packages after each push to main.
-# Needs jbh-notification-contracts, published first by the repo that owns it (see profile github in pom.xml).
+# Needs jbh-notification-contracts, published first by the jbh-notification repo (workflow publish). See profile github in pom.xml.
 # jbh-iam and jbh-personal-finance then download com.jbh:jbh-gateway-client from there in their own CI.
 
 # The name shown in the GitHub "Actions" tab.

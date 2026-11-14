@@ -181,14 +181,14 @@
     </repository>
   </distributionManagement>
 
-  <!-- CI only (-Pgithub): jbh-notification-contracts is published by the jbh-personal-finance repo. -->
+  <!-- CI only (-Pgithub): jbh-notification-contracts is published by the jbh-notification repo. -->
   <profiles>
     <profile>
       <id>github</id>
       <repositories>
         <repository>
           <id>github-packages-read</id>
-          <url>https://maven.pkg.github.com/kkpa-jbh/jbh-personal-finance</url>
+          <url>https://maven.pkg.github.com/kkpa-jbh/jbh-notification</url>
           <snapshots>
             <enabled>true</enabled>
           </snapshots>

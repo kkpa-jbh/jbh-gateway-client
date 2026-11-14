@@ -5,21 +5,22 @@
   "module": "jbh-gateway-client",
   "roadmap": null,
   "request": "JBH-74 section 3: in pom.xml profile github, change the package repository URL https://maven.pkg.github.com/kkpa-jbh/jbh-personal-finance to https://maven.pkg.github.com/kkpa-jbh/jbh-notification and update its comment. Update the header comment of .github/workflows/publish.yml and README.md (contracts now come from jbh-notification). Dependency coordinates and Java code do not change.",
-  "status": "proposed",
+  "status": "in-progress",
   "rollup": {
     "current": [],
     "pending": [
-      "2.1",
-      "2.2",
-      "2.3",
       "3.1",
       "3.2"
     ],
     "blocked": [],
-    "done": []
+    "done": [
+      "2.1",
+      "2.2",
+      "2.3"
+    ]
   },
   "created_at": "2026-11-14T04:07:23Z",
-  "updated_at": "2026-11-14T04:07:23Z",
+  "updated_at": "2026-11-14T22:27:54Z",
   "leader": {
     "assistant": "Claude Code",
     "model": "claude-opus-5-5"
@@ -46,14 +47,23 @@
       "module": "jbh-gateway-client",
       "depends_on": [],
       "parallel_ok": true,
-      "status": "pending",
-      "agent": null,
-      "model": null,
-      "started_at": null,
-      "completed_at": null,
-      "duration_seconds": null,
-      "notes": null,
-      "budget": null
+      "status": "done",
+      "agent": "jbh-gateway-client",
+      "model": "claude-sonnet-5-5",
+      "started_at": "2026-11-14T22:26:45Z",
+      "completed_at": "2026-11-14T22:27:54Z",
+      "duration_seconds": 69,
+      "notes": "pom.xml profile github URL now maven.pkg.github.com/kkpa-jbh/jbh-notification; profile comment updated. Coordinates and the skipPmdError edit untouched.",
+      "budget": {
+        "five_hour_pct_start": 67.0,
+        "five_hour_pct_end": 72.0,
+        "five_hour_pct_delta": 5.0,
+        "cost_usd_delta": 0.84,
+        "context_pct_end": 16,
+        "source": "statusline-cache",
+        "approx": true,
+        "note": "delta covers 2.1-2.3 jointly (one serial worker) plus the leader's test run"
+      }
     },
     {
       "id": "2.2",
@@ -61,14 +71,23 @@
       "module": "jbh-gateway-client",
       "depends_on": [],
       "parallel_ok": true,
-      "status": "pending",
-      "agent": null,
-      "model": null,
-      "started_at": null,
-      "completed_at": null,
-      "duration_seconds": null,
-      "notes": null,
-      "budget": null
+      "status": "done",
+      "agent": "jbh-gateway-client",
+      "model": "claude-sonnet-5-5",
+      "started_at": "2026-11-14T22:26:45Z",
+      "completed_at": "2026-11-14T22:27:54Z",
+      "duration_seconds": 69,
+      "notes": "publish.yml line 2: contracts published first by the jbh-notification repo (workflow publish).",
+      "budget": {
+        "five_hour_pct_start": 67.0,
+        "five_hour_pct_end": 72.0,
+        "five_hour_pct_delta": 5.0,
+        "cost_usd_delta": 0.84,
+        "context_pct_end": 16,
+        "source": "statusline-cache",
+        "approx": true,
+        "note": "delta covers 2.1-2.3 jointly (one serial worker) plus the leader's test run"
+      }
     },
     {
       "id": "2.3",
@@ -76,14 +95,23 @@
       "module": "jbh-gateway-client",
       "depends_on": [],
       "parallel_ok": true,
-      "status": "pending",
-      "agent": null,
-      "model": null,
-      "started_at": null,
-      "completed_at": null,
-      "duration_seconds": null,
-      "notes": null,
-      "budget": null
+      "status": "done",
+      "agent": "jbh-gateway-client",
+      "model": "claude-sonnet-5-5",
+      "started_at": "2026-11-14T22:26:45Z",
+      "completed_at": "2026-11-14T22:27:54Z",
+      "duration_seconds": 69,
+      "notes": "README Install and publish lines 167, 170, 171 now name jbh-notification and workflow publish. Consumer mentions (31, 32, 166, images part of 171) unchanged.",
+      "budget": {
+        "five_hour_pct_start": 67.0,
+        "five_hour_pct_end": 72.0,
+        "five_hour_pct_delta": 5.0,
+        "cost_usd_delta": 0.84,
+        "context_pct_end": 16,
+        "source": "statusline-cache",
+        "approx": true,
+        "note": "delta covers 2.1-2.3 jointly (one serial worker) plus the leader's test run"
+      }
     },
     {
       "id": "3.1",
@@ -175,6 +203,15 @@
       "decision": "PR opened as draft after the artifacts commit",
       "why": "User asked to push the PR now; implementation waits for jbh-leader 'go section 3', so the PR must not be merged yet.",
       "covered_by": null
+    },
+    {
+      "id": "D6",
+      "at": "2026-11-14T22:26:45Z",
+      "scope": "change",
+      "made_by": "leader",
+      "decision": "Linear in-progress transition at Step 5 not fired for JBH-74",
+      "why": "jbh-leader owns the JBH-74 Linear status for the whole system plan and said: do not move JBH-74 in Linear.",
+      "covered_by": "jbh-leader 'go section 3' message"
     }
   ],
   "events": [
@@ -187,6 +224,16 @@
       "at": "2026-11-14T04:07:23Z",
       "agent": "leader",
       "event": "Step 3a briefing shown; user approved. Step 3b: no risk. Design gate: not touched. Stopped before Step 5 until jbh-leader sends 'go section 3'."
+    },
+    {
+      "at": "2026-11-14T22:26:45Z",
+      "agent": "leader",
+      "event": "jbh-leader sent 'go section 3' (contracts jar in ~/.m2 from jbh-notification, 2026-11-14 17:25 local). Wave 1 dispatched: tasks 2.1, 2.2, 2.3, one serial worker (sonnet). Budget start 67% / $9.83."
+    },
+    {
+      "at": "2026-11-14T22:27:54Z",
+      "agent": "leader",
+      "event": "Wave 1 reconciled. Worker timestamps were placeholders; leader used its bracket times. Run by the leader (assistantRunsTests): mvn -B clean verify exit 0 (32 tests, 0 failures); mvn -B -q pmd:check exit 0. Worker flagged publish.yml:3 consumer hit vs 3.1 criterion."
     }
   ]
 }
