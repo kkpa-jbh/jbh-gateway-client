@@ -1,0 +1,192 @@
+{
+  "schema_version": 1,
+  "kind": "change",
+  "change": "jbh-gateway-client-move-contracts-source",
+  "module": "jbh-gateway-client",
+  "roadmap": null,
+  "request": "JBH-74 section 3: in pom.xml profile github, change the package repository URL https://maven.pkg.github.com/kkpa-jbh/jbh-personal-finance to https://maven.pkg.github.com/kkpa-jbh/jbh-notification and update its comment. Update the header comment of .github/workflows/publish.yml and README.md (contracts now come from jbh-notification). Dependency coordinates and Java code do not change.",
+  "status": "proposed",
+  "rollup": {
+    "current": [],
+    "pending": [
+      "2.1",
+      "2.2",
+      "2.3",
+      "3.1",
+      "3.2"
+    ],
+    "blocked": [],
+    "done": []
+  },
+  "created_at": "2026-11-14T04:07:23Z",
+  "updated_at": "2026-11-14T04:07:23Z",
+  "leader": {
+    "assistant": "Claude Code",
+    "model": "claude-opus-5-5"
+  },
+  "git": {
+    "strategy": "auto",
+    "branch": "ft/CH1-JBH-74-jbh-gateway-client-move-contracts-source",
+    "base": "db37228e09418a3e1a364fd6f0c505ad890ced81",
+    "ticket": "JBH-74",
+    "ticket_url": null,
+    "ticket_tracker": "linear",
+    "created_at": "2026-11-14T04:07:23Z"
+  },
+  "test_first": {
+    "status": "skipped",
+    "commit": null,
+    "tests": [],
+    "approved_at": null
+  },
+  "tasks": [
+    {
+      "id": "2.1",
+      "title": "pom.xml: profile github reads https://maven.pkg.github.com/kkpa-jbh/jbh-notification; update the comment (D1)",
+      "module": "jbh-gateway-client",
+      "depends_on": [],
+      "parallel_ok": true,
+      "status": "pending",
+      "agent": null,
+      "model": null,
+      "started_at": null,
+      "completed_at": null,
+      "duration_seconds": null,
+      "notes": null,
+      "budget": null
+    },
+    {
+      "id": "2.2",
+      "title": "publish.yml: header comment says contracts come from jbh-notification, workflow publish (D1)",
+      "module": "jbh-gateway-client",
+      "depends_on": [],
+      "parallel_ok": true,
+      "status": "pending",
+      "agent": null,
+      "model": null,
+      "started_at": null,
+      "completed_at": null,
+      "duration_seconds": null,
+      "notes": null,
+      "budget": null
+    },
+    {
+      "id": "2.3",
+      "title": "README.md Install and publish: contracts source jbh-notification; consumer mentions stay (D2)",
+      "module": "jbh-gateway-client",
+      "depends_on": [],
+      "parallel_ok": true,
+      "status": "pending",
+      "agent": null,
+      "model": null,
+      "started_at": null,
+      "completed_at": null,
+      "duration_seconds": null,
+      "notes": null,
+      "budget": null
+    },
+    {
+      "id": "3.1",
+      "title": "grep: only the non-contracts jbh-personal-finance hits remain; pom.xml and .github have 0 (D2)",
+      "module": "jbh-gateway-client",
+      "depends_on": [
+        "2.1",
+        "2.2",
+        "2.3"
+      ],
+      "parallel_ok": false,
+      "status": "pending",
+      "agent": null,
+      "model": null,
+      "started_at": null,
+      "completed_at": null,
+      "duration_seconds": null,
+      "notes": null,
+      "budget": null
+    },
+    {
+      "id": "3.2",
+      "title": "grep counts: 0 old URL hits, 1 jbh-notification URL hit in pom.xml (D3)",
+      "module": "jbh-gateway-client",
+      "depends_on": [
+        "2.1",
+        "2.2",
+        "2.3"
+      ],
+      "parallel_ok": false,
+      "status": "pending",
+      "agent": null,
+      "model": null,
+      "started_at": null,
+      "completed_at": null,
+      "duration_seconds": null,
+      "notes": null,
+      "budget": null
+    }
+  ],
+  "review": {
+    "status": "pending",
+    "agent": null,
+    "brief": null,
+    "rounds": []
+  },
+  "decisions": [
+    {
+      "id": "D1",
+      "at": "2026-11-14T04:07:23Z",
+      "scope": "change",
+      "made_by": "user",
+      "decision": "Pipeline config block: Modules-Root '.', Doc-Pack CLAUDE.md + README.md; Complexity-Check mvn -q pmd:check with pmd-complexity.xml",
+      "why": "Repo had no block; single-module library, change touches root files only.",
+      "covered_by": null
+    },
+    {
+      "id": "D2",
+      "at": "2026-11-14T04:07:23Z",
+      "scope": "change",
+      "made_by": "user",
+      "decision": "design briefing (Step 3a) approved",
+      "why": "User reviewed design.md D1-D3 and said commit.",
+      "covered_by": null
+    },
+    {
+      "id": "D3",
+      "at": "2026-11-14T04:07:23Z",
+      "scope": "change",
+      "made_by": "leader",
+      "decision": "concurrency check (Step 3b): no race risk in any task",
+      "why": "All tasks are text edits and grep checks: no shared data, no parallel or repeated writes.",
+      "covered_by": null
+    },
+    {
+      "id": "D4",
+      "at": "2026-11-14T04:07:23Z",
+      "scope": "change",
+      "made_by": "leader",
+      "decision": "test_first skipped",
+      "why": "No Java code change and unit tests excluded by the user (JBH-74 plan); nothing to put in a blueprint.",
+      "covered_by": "JBH-74 plan: Unit tests excluded"
+    },
+    {
+      "id": "D5",
+      "at": "2026-11-14T04:07:23Z",
+      "scope": "change",
+      "made_by": "leader",
+      "decision": "PR opened as draft after the artifacts commit",
+      "why": "User asked to push the PR now; implementation waits for jbh-leader 'go section 3', so the PR must not be merged yet.",
+      "covered_by": null
+    }
+  ],
+  "events": [
+    {
+      "at": "2026-11-14T04:07:23Z",
+      "agent": "leader",
+      "event": "artifact worker dispatched (sonnet); re-dispatched once to add decision IDs D1-D3; openspec validate --strict passed"
+    },
+    {
+      "at": "2026-11-14T04:07:23Z",
+      "agent": "leader",
+      "event": "Step 3a briefing shown; user approved. Step 3b: no risk. Design gate: not touched. Stopped before Step 5 until jbh-leader sends 'go section 3'."
+    }
+  ]
+}
