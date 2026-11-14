@@ -26,6 +26,7 @@ Search of the whole repo (`grep -rn jbh-personal-finance`, excluding `.git`, `ta
 | `README.md:31`, `README.md:32` | "Used by `jbh-personal-finance`" (client methods table) | no, it is a caller of the user client | leave alone |
 | `README.md:166` | "`jbh-iam` and `jbh-personal-finance` find it there" (~/.m2) | no, they are consumers of this library | leave alone |
 | `README.md:171` | "... `jbh-iam` and `jbh-personal-finance` images" (end of line) | no, consumers | leave alone |
+| `.github/workflows/publish.yml:3` | "`jbh-iam` and `jbh-personal-finance` then download `com.jbh:jbh-gateway-client`" (added by commit `b450ef0`, after this table) | no, consumers | leave alone (user decision D7: the one allowed `.github/` hit) |
 
 ## Test contract
 

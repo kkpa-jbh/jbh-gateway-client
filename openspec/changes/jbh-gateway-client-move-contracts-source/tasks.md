@@ -10,7 +10,7 @@ Does not apply: no unit tests (user decision, JBH-74) and no Java code change. N
 
 ## 3. Verification (depends on 2.1, 2.2, 2.3)
 
-- [ ] 3.1 Search `grep -rn "jbh-personal-finance" . --exclude-dir=.git --exclude-dir=target`. Only the non-contracts hits listed in design.md remain (`README.md` lines 31, 32, 166, 171 images part). `pom.xml` and `.github/` have 0 hits. (D2)
-- [ ] 3.2 Expected counts: 0 hits of `maven.pkg.github.com/kkpa-jbh/jbh-personal-finance`; 1 hit of `maven.pkg.github.com/kkpa-jbh/jbh-notification` in `pom.xml`. (D3)
+- [x] 3.1 Search `grep -rn "jbh-personal-finance" . --exclude-dir=.git --exclude-dir=target`. Only the non-contracts hits listed in design.md remain (`README.md` lines 31, 32, 166, 171 images part). `pom.xml` and `.github/` have 0 hits. (D2)
+- [x] 3.2 Expected counts: 0 hits of `maven.pkg.github.com/kkpa-jbh/jbh-personal-finance`; 1 hit of `maven.pkg.github.com/kkpa-jbh/jbh-notification` in `pom.xml`. (D3)
 
 Size estimate: 3 files, ~10 changed lines (tests and docs included)
