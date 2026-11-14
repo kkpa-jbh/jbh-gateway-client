@@ -156,6 +156,19 @@
           <excludedGroups>${excludedGroups}</excludedGroups>
         </configuration>
       </plugin>
+      <!-- Complexity check only, run on demand: mvn -q pmd:check. No execution, so the normal build does not run it. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-pmd-plugin</artifactId>
+        <version>3.25.0</version>
+        <configuration>
+          <rulesets>
+            <ruleset>pmd-complexity.xml</ruleset>
+          </rulesets>
+          <printFailingErrors>true</printFailingErrors>
+          <linkXRef>false</linkXRef>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 

@@ -90,3 +90,11 @@ Triggers for this repo:
 - Change the dependency on `jbh-notification-contracts`, the groupId/artifactId, or the version (this changes the build order)
 
 If you are not sure a change counts, read `../jbh-deploy/README.md` and check whether any line is now wrong.
+
+## Pipeline config (kkpa-orchestrate-change)
+
+- **Modules-Root:** `.` (single-module repo: the repo root is the one module, `jbh-gateway-client`)
+- **Doc-Pack:** `CLAUDE.md`, `README.md`
+- **Complexity-Check:** `mvn -q pmd:check` (uses `pmd-complexity.xml`: CyclomaticComplexity over 10, CognitiveComplexity over 15)
+- **Design-Gates:** `database`
+- **Git-Strategy:** `auto`
