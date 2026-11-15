@@ -1,0 +1,333 @@
+{
+  "schema_version": 1,
+  "kind": "change",
+  "change": "jbh-gateway-client-move-contracts-source",
+  "module": "jbh-gateway-client",
+  "roadmap": null,
+  "request": "JBH-74 section 3: in pom.xml profile github, change the package repository URL https://maven.pkg.github.com/kkpa-jbh/jbh-personal-finance to https://maven.pkg.github.com/kkpa-jbh/jbh-notification and update its comment. Update the header comment of .github/workflows/publish.yml and README.md (contracts now come from jbh-notification). Dependency coordinates and Java code do not change.",
+  "status": "archived",
+  "rollup": {
+    "current": [],
+    "pending": [],
+    "blocked": [],
+    "done": [
+      "2.1",
+      "2.2",
+      "2.3",
+      "3.1",
+      "3.2"
+    ]
+  },
+  "created_at": "2026-11-14T04:07:23Z",
+  "updated_at": "2026-11-14T22:38:35Z",
+  "leader": {
+    "assistant": "Claude Code",
+    "model": "claude-opus-5-5"
+  },
+  "git": {
+    "strategy": "auto",
+    "branch": "ft/CH1-JBH-74-jbh-gateway-client-move-contracts-source",
+    "base": "db37228e09418a3e1a364fd6f0c505ad890ced81",
+    "ticket": "JBH-74",
+    "ticket_url": null,
+    "ticket_tracker": "linear",
+    "created_at": "2026-11-14T04:07:23Z"
+  },
+  "test_first": {
+    "status": "skipped",
+    "commit": null,
+    "tests": [],
+    "approved_at": null
+  },
+  "tasks": [
+    {
+      "id": "2.1",
+      "title": "pom.xml: profile github reads https://maven.pkg.github.com/kkpa-jbh/jbh-notification; update the comment (D1)",
+      "module": "jbh-gateway-client",
+      "depends_on": [],
+      "parallel_ok": true,
+      "status": "done",
+      "agent": "jbh-gateway-client",
+      "model": "claude-sonnet-5-5",
+      "started_at": "2026-11-14T22:26:45Z",
+      "completed_at": "2026-11-14T22:27:54Z",
+      "duration_seconds": 69,
+      "notes": "pom.xml profile github URL now maven.pkg.github.com/kkpa-jbh/jbh-notification; profile comment updated. Coordinates and the skipPmdError edit untouched.",
+      "budget": {
+        "five_hour_pct_start": 67.0,
+        "five_hour_pct_end": 72.0,
+        "five_hour_pct_delta": 5.0,
+        "cost_usd_delta": 0.84,
+        "context_pct_end": 16,
+        "source": "statusline-cache",
+        "approx": true,
+        "note": "delta covers 2.1-2.3 jointly (one serial worker) plus the leader's test run"
+      }
+    },
+    {
+      "id": "2.2",
+      "title": "publish.yml: header comment says contracts come from jbh-notification, workflow publish (D1)",
+      "module": "jbh-gateway-client",
+      "depends_on": [],
+      "parallel_ok": true,
+      "status": "done",
+      "agent": "jbh-gateway-client",
+      "model": "claude-sonnet-5-5",
+      "started_at": "2026-11-14T22:26:45Z",
+      "completed_at": "2026-11-14T22:27:54Z",
+      "duration_seconds": 69,
+      "notes": "publish.yml line 2: contracts published first by the jbh-notification repo (workflow publish).",
+      "budget": {
+        "five_hour_pct_start": 67.0,
+        "five_hour_pct_end": 72.0,
+        "five_hour_pct_delta": 5.0,
+        "cost_usd_delta": 0.84,
+        "context_pct_end": 16,
+        "source": "statusline-cache",
+        "approx": true,
+        "note": "delta covers 2.1-2.3 jointly (one serial worker) plus the leader's test run"
+      }
+    },
+    {
+      "id": "2.3",
+      "title": "README.md Install and publish: contracts source jbh-notification; consumer mentions stay (D2)",
+      "module": "jbh-gateway-client",
+      "depends_on": [],
+      "parallel_ok": true,
+      "status": "done",
+      "agent": "jbh-gateway-client",
+      "model": "claude-sonnet-5-5",
+      "started_at": "2026-11-14T22:26:45Z",
+      "completed_at": "2026-11-14T22:27:54Z",
+      "duration_seconds": 69,
+      "notes": "README Install and publish lines 167, 170, 171 now name jbh-notification and workflow publish. Consumer mentions (31, 32, 166, images part of 171) unchanged.",
+      "budget": {
+        "five_hour_pct_start": 67.0,
+        "five_hour_pct_end": 72.0,
+        "five_hour_pct_delta": 5.0,
+        "cost_usd_delta": 0.84,
+        "context_pct_end": 16,
+        "source": "statusline-cache",
+        "approx": true,
+        "note": "delta covers 2.1-2.3 jointly (one serial worker) plus the leader's test run"
+      }
+    },
+    {
+      "id": "3.1",
+      "title": "grep: only the non-contracts jbh-personal-finance hits remain; pom.xml and .github have 0 (D2)",
+      "module": "jbh-gateway-client",
+      "depends_on": [
+        "2.1",
+        "2.2",
+        "2.3"
+      ],
+      "parallel_ok": false,
+      "status": "done",
+      "agent": "jbh-gateway-client",
+      "model": "claude-haiku-5-5",
+      "started_at": "2026-11-14T22:30:24Z",
+      "completed_at": "2026-11-14T22:30:28Z",
+      "duration_seconds": 4,
+      "notes": "Hits outside openspec/: README 31, 32, 166, 171 (images part) and publish.yml:3 (D7, allowed). pom.xml 0 hits. openspec/ excluded: the artifacts quote the old URL.",
+      "budget": {
+        "five_hour_pct_start": 72.0,
+        "five_hour_pct_end": 76.0,
+        "five_hour_pct_delta": 4.0,
+        "cost_usd_delta": 0.43,
+        "context_pct_end": 17,
+        "source": "statusline-cache",
+        "approx": true,
+        "note": "delta covers 3.1+3.2 jointly (one serial worker)"
+      }
+    },
+    {
+      "id": "3.2",
+      "title": "grep counts: 0 old URL hits, 1 jbh-notification URL hit in pom.xml (D3)",
+      "module": "jbh-gateway-client",
+      "depends_on": [
+        "2.1",
+        "2.2",
+        "2.3"
+      ],
+      "parallel_ok": false,
+      "status": "done",
+      "agent": "jbh-gateway-client",
+      "model": "claude-haiku-5-5",
+      "started_at": "2026-11-14T22:30:24Z",
+      "completed_at": "2026-11-14T22:30:28Z",
+      "duration_seconds": 4,
+      "notes": "Old Maven URL: 0 hits outside openspec/. jbh-notification Maven URL: exactly 1 hit, pom.xml:193.",
+      "budget": {
+        "five_hour_pct_start": 72.0,
+        "five_hour_pct_end": 76.0,
+        "five_hour_pct_delta": 4.0,
+        "cost_usd_delta": 0.43,
+        "context_pct_end": 17,
+        "source": "statusline-cache",
+        "approx": true,
+        "note": "delta covers 3.1+3.2 jointly (one serial worker)"
+      }
+    }
+  ],
+  "review": {
+    "status": "reviewer-approved",
+    "agent": "jbh-gateway-client-reviewer",
+    "brief": "JBH-74 section 3: the contracts source moves from jbh-personal-finance to jbh-notification. Validate: (1) pom.xml profile github reads https://maven.pkg.github.com/kkpa-jbh/jbh-notification; coordinates com.jbh:jbh-notification-contracts:1.0.0-SNAPSHOT unchanged (D1). (2) Only contracts-source mentions changed; consumer mentions stay (D2, hit table). (3) publish.yml:3 consumer hit is allowed by user decision D7, added as a design.md hit-table row. (4) No tests, no Java (D3, D4 test_first skipped). Scope: commits 0c2ce19 (wave-1) and 066b075 (wave-2). b450ef0 docs(ci) is in base...HEAD but is not part of this change (comments-only, its own task). The unstaged pom.xml skipPmdError edit is a separate CodeRabbit fix, not part of this change: do not review it. User decisions: D1 config block, D2 briefing approved, D7, D8 security skip. Signals: build + suite (mvn -B clean verify, 32 tests, exit 0), pmd:check exit 0, openspec validate --strict valid: all assistant-run by the leader. Grep checks 3.1/3.2: worker-run, leader re-checked. Dispatch values: Performance-Profile none; Test-Execution-Policy default; Test-First on (skipped); Language English (B2). Security-Gate: skip \u2014 user decision D8.",
+    "rounds": [
+      {
+        "round": 1,
+        "at": "2026-11-14T22:45:00Z",
+        "verdict": "approved",
+        "findings": [],
+        "security": {
+          "status": "skipped",
+          "ran_at": "2026-11-14T22:45:00Z",
+          "scope": "git.base",
+          "findings": [],
+          "note": "Skipped by user decision D8 (scope review:security-gate)."
+        },
+        "duration_seconds": null,
+        "budget": {
+          "five_hour_pct_start": 78.0,
+          "five_hour_pct_end": 85.0,
+          "five_hour_pct_delta": 7.0,
+          "cost_usd_delta": 0.44,
+          "context_pct_end": 18,
+          "source": "statusline-cache",
+          "approx": true,
+          "note": "end read right after the round; duration not measured (reviewer 'at' is approximate)"
+        }
+      }
+    ]
+  },
+  "decisions": [
+    {
+      "id": "D1",
+      "at": "2026-11-14T04:07:23Z",
+      "scope": "change",
+      "made_by": "user",
+      "decision": "Pipeline config block: Modules-Root '.', Doc-Pack CLAUDE.md + README.md; Complexity-Check mvn -q pmd:check with pmd-complexity.xml",
+      "why": "Repo had no block; single-module library, change touches root files only.",
+      "covered_by": null
+    },
+    {
+      "id": "D2",
+      "at": "2026-11-14T04:07:23Z",
+      "scope": "change",
+      "made_by": "user",
+      "decision": "design briefing (Step 3a) approved",
+      "why": "User reviewed design.md D1-D3 and said commit.",
+      "covered_by": null
+    },
+    {
+      "id": "D3",
+      "at": "2026-11-14T04:07:23Z",
+      "scope": "change",
+      "made_by": "leader",
+      "decision": "concurrency check (Step 3b): no race risk in any task",
+      "why": "All tasks are text edits and grep checks: no shared data, no parallel or repeated writes.",
+      "covered_by": null
+    },
+    {
+      "id": "D4",
+      "at": "2026-11-14T04:07:23Z",
+      "scope": "change",
+      "made_by": "leader",
+      "decision": "test_first skipped",
+      "why": "No Java code change and unit tests excluded by the user (JBH-74 plan); nothing to put in a blueprint.",
+      "covered_by": "JBH-74 plan: Unit tests excluded"
+    },
+    {
+      "id": "D5",
+      "at": "2026-11-14T04:07:23Z",
+      "scope": "change",
+      "made_by": "leader",
+      "decision": "PR opened as draft after the artifacts commit",
+      "why": "User asked to push the PR now; implementation waits for jbh-leader 'go section 3', so the PR must not be merged yet.",
+      "covered_by": null
+    },
+    {
+      "id": "D6",
+      "at": "2026-11-14T22:26:45Z",
+      "scope": "change",
+      "made_by": "leader",
+      "decision": "Linear in-progress transition at Step 5 not fired for JBH-74",
+      "why": "jbh-leader owns the JBH-74 Linear status for the whole system plan and said: do not move JBH-74 in Linear.",
+      "covered_by": "jbh-leader 'go section 3' message"
+    },
+    {
+      "id": "D7",
+      "at": "2026-11-14T22:30:08Z",
+      "scope": "task:3.1",
+      "made_by": "user",
+      "decision": "publish.yml:3 consumer hit of jbh-personal-finance is allowed; design.md hit table gets one added row",
+      "why": "The line names consumers, not the contracts source (D2). It came from b450ef0 after design.md. Rewording it was rejected: it would drop useful information.",
+      "covered_by": null
+    },
+    {
+      "id": "D8",
+      "at": "2026-11-14T22:37:50Z",
+      "scope": "review:security-gate",
+      "made_by": "user",
+      "decision": "Security-Gate: skip for review round 1",
+      "why": "User chose skip. Diff is one Maven repository URL in a CI-only profile, comments, README and OpenSpec artifacts; no code, secrets or auth.",
+      "covered_by": null
+    },
+    {
+      "id": "D9",
+      "at": "2026-11-14T22:38:35Z",
+      "scope": "change",
+      "made_by": "leader",
+      "decision": "Linear done transition at Step 8 not fired for JBH-74",
+      "why": "JBH-74 covers the whole system plan; this is only section 3. jbh-leader owns its Linear status and said: do not move JBH-74.",
+      "covered_by": "jbh-leader 'go section 3' message"
+    }
+  ],
+  "events": [
+    {
+      "at": "2026-11-14T04:07:23Z",
+      "agent": "leader",
+      "event": "artifact worker dispatched (sonnet); re-dispatched once to add decision IDs D1-D3; openspec validate --strict passed"
+    },
+    {
+      "at": "2026-11-14T04:07:23Z",
+      "agent": "leader",
+      "event": "Step 3a briefing shown; user approved. Step 3b: no risk. Design gate: not touched. Stopped before Step 5 until jbh-leader sends 'go section 3'."
+    },
+    {
+      "at": "2026-11-14T22:26:45Z",
+      "agent": "leader",
+      "event": "jbh-leader sent 'go section 3' (contracts jar in ~/.m2 from jbh-notification, 2026-11-14 17:25 local). Wave 1 dispatched: tasks 2.1, 2.2, 2.3, one serial worker (sonnet). Budget start 67% / $9.83."
+    },
+    {
+      "at": "2026-11-14T22:27:54Z",
+      "agent": "leader",
+      "event": "Wave 1 reconciled. Worker timestamps were placeholders; leader used its bracket times. Run by the leader (assistantRunsTests): mvn -B clean verify exit 0 (32 tests, 0 failures); mvn -B -q pmd:check exit 0. Worker flagged publish.yml:3 consumer hit vs 3.1 criterion. Wave 1 commit 0c2ce19 (skipPmdError lines kept out, unstaged)."
+    },
+    {
+      "at": "2026-11-14T22:30:08Z",
+      "agent": "leader",
+      "event": "Wave 2 dispatched: tasks 3.1, 3.2, one serial worker (haiku, read-only grep checks). Budget start 72% / $10.67."
+    },
+    {
+      "at": "2026-11-14T22:30:49Z",
+      "agent": "leader",
+      "event": "Wave 2 reconciled: 3.1 and 3.2 pass (grep, read-only; verifier: the worker's grep output, re-checked by the leader against design.md). No code touched."
+    },
+    {
+      "at": "2026-11-14T22:31:08Z",
+      "agent": "leader",
+      "event": "Step 6, run by the leader (assistantRunsTests): mvn -B clean verify exit 0 (32 tests, 0 failures); mvn -B -q pmd:check exit 0; openspec validate --type change --strict: valid. Real size base...HEAD: 10 files, +428/-7 (artifacts and b450ef0 docs(ci) included); product files 3 (estimate 3, ~10 lines)."
+    },
+    {
+      "at": "2026-11-14T22:37:50Z",
+      "agent": "leader",
+      "event": "Review round 1 dispatched: jbh-gateway-client-reviewer (sonnet), Security-Gate skip (D8). Budget start 78% / $11.35."
+    },
+    {
+      "at": "2026-11-14T22:38:35Z",
+      "agent": "leader",
+      "event": "Review round 1: approved by jbh-gateway-client-reviewer, 0 findings, security skipped (D8). Reviewer set review.status only; leader moves change status to archived at Step 8. Archived with openspec archive -y (spec contracts-source synced)."
+    }
+  ]
+}

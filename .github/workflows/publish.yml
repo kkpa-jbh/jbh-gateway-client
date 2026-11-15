@@ -1,31 +1,54 @@
-# Publishes jbh-gateway-client to GitHub Packages.
-# Needs jbh-notification-contracts, published first by jbh-personal-finance (publish-contracts).
+# Publish: uploads the jbh-gateway-client jar to GitHub Packages after each push to main.
+# Needs jbh-notification-contracts, published first by the jbh-notification repo (workflow publish). See profile github in pom.xml.
+# jbh-iam and jbh-personal-finance then download com.jbh:jbh-gateway-client from there in their own CI.
+
+# The name shown in the GitHub "Actions" tab.
 name: Publish
 
 on:
+  # Adds a "Run workflow" button in the Actions tab, to publish by hand.
   workflow_dispatch:
+  # Runs on every push to main. A merged PR is a push to main, so this runs after each merge.
   push:
     branches: [ main ]
 
+# What the automatic GITHUB_TOKEN may do in this run. Every permission not listed is "none".
+# - contents: read   -> download the code.
+# - packages: write  -> upload the jar to this repo's GitHub Packages.
 permissions:
   contents: read
   packages: write
 
 jobs:
+  # "publish" is the job id. Each job gets a fresh, empty Ubuntu VM that is deleted after.
   publish:
     runs-on: ubuntu-latest
     steps:
+      # The VM starts empty. This step downloads the code of the pushed commit into it.
       - uses: actions/checkout@v4
 
+      # Installs Java 21 (Temurin build). "cache: maven" saves ~/.m2 between runs,
+      # so Maven does not download every dependency again each time.
       - uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'temurin'
           cache: maven
 
+      # Builds the jar and uploads it to the URL in pom.xml <distributionManagement>.
+      # -B: batch mode, plain logs.
       # -U: the ~/.m2 cache is restored, so force a check for a newer jbh-notification-contracts SNAPSHOT.
+      # -s .github/maven-settings.xml: the Maven settings file with the logins for server ids
+      #    "github" (deploy) and "github-packages-read" (read other repos' packages).
+      # -Pgithub: turns on profile github in pom.xml, which adds the package repo of the contracts.
+      # -DskipTests: no tests in this run.
       - name: Deploy library
         run: mvn -B -U -s .github/maven-settings.xml -Pgithub -DskipTests deploy
         env:
+          # GitHub creates this token for each run; it is not a secret you add by hand.
+          # maven-settings.xml reads it as the password for server id "github" (deploy).
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Repo secret you add by hand: a classic personal access token with only read:packages.
+          # GITHUB_TOKEN can read only this repo's packages, so this one reads the contracts
+          # from the other repo (server id "github-packages-read").
           PACKAGES_READ_TOKEN: ${{ secrets.PACKAGES_READ_TOKEN }}
