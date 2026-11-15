@@ -18,6 +18,8 @@ public class JbhNotificationGatewayClientImpl extends BaseApiGatewayClient
     implements JbhNotificationGatewayClient {
 
   private static final String NOTIFICATIONS_PATH = "/notifications/v1";
+  // The path template for tracing has no query string.
+  private static final String NOTIFICATIONS_TEMPLATE = "/notifications/v1";
 
   public JbhNotificationGatewayClientImpl(JbhGatewayClientBuilder hostConfig)
       throws JbhGatewayException {
@@ -49,6 +51,6 @@ public class JbhNotificationGatewayClientImpl extends BaseApiGatewayClient
           "Failed to serialize notification request", "SERIALIZATION_ERROR", null, e);
     }
 
-    return executePost(path, jsonBody, headers);
+    return executePost(path, NOTIFICATIONS_TEMPLATE, jsonBody, headers);
   }
 }

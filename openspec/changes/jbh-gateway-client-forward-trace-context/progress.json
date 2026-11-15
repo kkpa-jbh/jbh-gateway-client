@@ -5,28 +5,26 @@
   "module": "jbh-gateway-client",
   "roadmap": null,
   "request": "JBH-55 section 2 (ticket JBH-57): forward the W3C trace context from jbh-gateway-client, one CLIENT span per call. Plan: /Users/cristianpena/cpena/sw/github/kkpa-jbh/kkpa/tickets/JBH-55/JBH-55.md section 2. Unit tests: excluded. Do not move Linear tickets (the jbh-leader session does it).",
-  "status": "in-progress",
+  "status": "verified",
   "rollup": {
-    "current": [
-      "3.1",
-      "4.1",
-      "4.2",
-      "4.3"
-    ],
-    "pending": [
-      "5.1",
-      "5.2"
-    ],
+    "current": [],
+    "pending": [],
     "blocked": [],
     "done": [
       "2.1",
       "2.2",
       "2.3",
-      "2.4"
+      "2.4",
+      "3.1",
+      "4.1",
+      "4.2",
+      "4.3",
+      "5.1",
+      "5.2"
     ]
   },
   "created_at": "2026-11-15T16:08:37Z",
-  "updated_at": "2026-11-15T16:10:40Z",
+  "updated_at": "2026-11-15T16:12:05Z",
   "leader": {
     "assistant": "Claude Code",
     "model": "claude-opus-5-5"
@@ -152,14 +150,23 @@
         "2.2"
       ],
       "parallel_ok": false,
-      "status": "in-progress",
+      "status": "done",
       "agent": "jbh-gateway-client",
       "model": "claude-sonnet-5-5",
       "started_at": "2026-11-15T16:10:40Z",
-      "completed_at": null,
-      "duration_seconds": null,
-      "notes": null,
-      "budget": null
+      "completed_at": "2026-11-15T16:12:05Z",
+      "duration_seconds": 85,
+      "notes": "New TracingHttpClientAdapter: CLIENT span, attributes per D7, ERROR on 5xx/exception, context injected with withReplaced; no recordException.",
+      "budget": {
+        "five_hour_pct_start": 70.0,
+        "five_hour_pct_end": null,
+        "five_hour_pct_delta": null,
+        "cost_usd_delta": null,
+        "context_pct_end": null,
+        "source": "statusline-cache",
+        "approx": true,
+        "note": "wave 2 end read after commit; see events"
+      }
     },
     {
       "id": "4.1",
@@ -169,14 +176,23 @@
         "2.2"
       ],
       "parallel_ok": false,
-      "status": "in-progress",
+      "status": "done",
       "agent": "jbh-gateway-client",
       "model": "claude-sonnet-5-5",
       "started_at": "2026-11-15T16:10:40Z",
-      "completed_at": null,
-      "duration_seconds": null,
-      "notes": null,
-      "budget": null
+      "completed_at": "2026-11-15T16:12:05Z",
+      "duration_seconds": 85,
+      "notes": "JbhGatewayInternalClientImpl template overloads for get, typed get, post, put, delete; old signatures pass null.",
+      "budget": {
+        "five_hour_pct_start": 70.0,
+        "five_hour_pct_end": null,
+        "five_hour_pct_delta": null,
+        "cost_usd_delta": null,
+        "context_pct_end": null,
+        "source": "statusline-cache",
+        "approx": true,
+        "note": "wave 2 end read after commit; see events"
+      }
     },
     {
       "id": "4.2",
@@ -188,14 +204,23 @@
         "4.1"
       ],
       "parallel_ok": false,
-      "status": "in-progress",
+      "status": "done",
       "agent": "jbh-gateway-client",
       "model": "claude-sonnet-5-5",
       "started_at": "2026-11-15T16:10:40Z",
-      "completed_at": null,
-      "duration_seconds": null,
-      "notes": null,
-      "budget": null
+      "completed_at": "2026-11-15T16:12:05Z",
+      "duration_seconds": 85,
+      "notes": "BaseApiGatewayClient executeX(path, uriTemplate, ...) overloads, /jbh-api prefix on template; chain Tracing -> Breaker -> transport.",
+      "budget": {
+        "five_hour_pct_start": 70.0,
+        "five_hour_pct_end": null,
+        "five_hour_pct_delta": null,
+        "cost_usd_delta": null,
+        "context_pct_end": null,
+        "source": "statusline-cache",
+        "approx": true,
+        "note": "wave 2 end read after commit; see events"
+      }
     },
     {
       "id": "4.3",
@@ -205,14 +230,23 @@
         "4.2"
       ],
       "parallel_ok": false,
-      "status": "in-progress",
+      "status": "done",
       "agent": "jbh-gateway-client",
       "model": "claude-sonnet-5-5",
       "started_at": "2026-11-15T16:10:40Z",
-      "completed_at": null,
-      "duration_seconds": null,
-      "notes": null,
-      "budget": null
+      "completed_at": "2026-11-15T16:12:05Z",
+      "duration_seconds": 85,
+      "notes": "findUserId, findUserGroup, sendNotification pass their templates (no query, {groupId}).",
+      "budget": {
+        "five_hour_pct_start": 70.0,
+        "five_hour_pct_end": null,
+        "five_hour_pct_delta": null,
+        "cost_usd_delta": null,
+        "context_pct_end": null,
+        "source": "statusline-cache",
+        "approx": true,
+        "note": "wave 2 end read after commit; see events"
+      }
     },
     {
       "id": "5.1",
@@ -225,13 +259,13 @@
         "4.3"
       ],
       "parallel_ok": false,
-      "status": "pending",
-      "agent": null,
-      "model": null,
-      "started_at": null,
-      "completed_at": null,
-      "duration_seconds": null,
-      "notes": null,
+      "status": "done",
+      "agent": "leader",
+      "model": "claude-opus-5-5",
+      "started_at": "2026-11-15T16:12:05Z",
+      "completed_at": "2026-11-15T16:12:05Z",
+      "duration_seconds": 0,
+      "notes": "Leader ran mvn -q test (exit 0) and mvn -q pmd:check (exit 0).",
       "budget": null
     },
     {
@@ -245,13 +279,13 @@
         "4.3"
       ],
       "parallel_ok": false,
-      "status": "pending",
-      "agent": null,
-      "model": null,
-      "started_at": null,
-      "completed_at": null,
-      "duration_seconds": null,
-      "notes": null,
+      "status": "done",
+      "agent": "leader",
+      "model": "claude-opus-5-5",
+      "started_at": "2026-11-15T16:12:05Z",
+      "completed_at": "2026-11-15T16:12:05Z",
+      "duration_seconds": 0,
+      "notes": "Native and Breaker adapters unchanged; jbh-deploy README unchanged. grep hits are false positives: Resilience4j recordException config and a Javadoc line.",
       "budget": null
     }
   ],
@@ -338,6 +372,11 @@
       "at": "2026-11-15T16:10:40Z",
       "agent": "leader",
       "event": "dispatched worker for wave 2 (tasks 3.1, 4.1, 4.2, 4.3, serial) on sonnet; budget start five_hour 70%, cost 3.31 USD"
+    },
+    {
+      "at": "2026-11-15T16:12:05Z",
+      "agent": "leader",
+      "event": "wave 2 verified by the leader (assistantRunsTests): mvn -q test exit 0; mvn -q pmd:check exit 0; static checks 5.2 done. Status verified."
     }
   ]
 }
