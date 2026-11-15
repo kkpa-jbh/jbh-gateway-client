@@ -334,6 +334,57 @@ JbhUserGatewayClient userClient(io.opentelemetry.api.OpenTelemetry openTelemetry
 }
 ```
 
+### Example: one request across services
+
+The user opens the Products page. Finance needs the user id, so it calls IAM through the gateway
+with this library. The trace id stays the same on every hop. The parent id (last-but-one part of
+`traceparent`) is the span id of the caller's span, so it changes on every hop.
+
+This is the target state after all JBH-55 sections. The browser, gateway and IAM spans come from
+their own repos. Span letters, ids and times are examples.
+
+```mermaid
+sequenceDiagram
+    participant WEB as Browser (jbh-app)
+    participant GW as jbh-gateway
+    participant FIN as jbh-personal-finance
+    participant IAM as jbh-iam
+    Note over WEB,IAM: One trace id for the whole request: 4bf92f35...0e4736
+    WEB->>GW: GET /jbh-api/finance/products<br/>traceparent: 00-4bf9...-[span A]-01
+    Note over GW: server span B (parent A)<br/>client span C
+    GW->>FIN: traceparent: 00-4bf9...-[span C]-01
+    Note over FIN: server span D (parent C)<br/>getUserClient().findUserId(...)
+    Note over FIN: this library: CLIENT span E<br/>GET /jbh-api/users/find-user-id
+    FIN->>GW: GET /jbh-api/users/find-user-id<br/>traceparent: 00-4bf9...-[span E]-01
+    Note over GW: server span F (parent E)<br/>client span G
+    GW->>IAM: traceparent: 00-4bf9...-[span G]-01
+    Note over IAM: server span H (parent G)
+    IAM-->>GW: 200 user id
+    GW-->>FIN: 200 user id (span E ends, status code 200)
+    FIN-->>GW: 200 products
+    GW-->>WEB: 200 products + X-Trace-Id: 4bf92f35...0e4736
+```
+
+Grafana Tempo shows it as one trace with 8 spans. The indent is the parent tree:
+
+```text
+A  jbh-web               CLIENT  GET /jbh-api/finance/products       182 ms
+ B  jbh-gateway          SERVER  GET /jbh-api/finance/**             176 ms
+  C  jbh-gateway         CLIENT  route to jbh-personal-finance       172 ms
+   D  jbh-personal-finance SERVER GET /jbh-api/finance/products      166 ms
+    E  jbh-personal-finance CLIENT GET /jbh-api/users/find-user-id    46 ms  <- this library
+     F  jbh-gateway      SERVER  GET /jbh-api/users/**                42 ms
+      G  jbh-gateway     CLIENT  route to jbh-iam-service             40 ms
+       H  jbh-iam        SERVER  GET /jbh-api/users/find-user-id      36 ms
+```
+
+Time inside a service is its server span minus the client span it waited on.
+Here: finance 120 ms (D − E), IAM 36 ms (H), gateway 6 ms (B − C, F − G), network 20 ms.
+
+If a service does not pass `.openTelemetry(...)`, the client uses the no-op instance. Hop 3 then
+has no `traceparent`, and the gateway starts a **second** trace for the IAM part. Nothing fails, but
+the finance trace has no IAM child in Tempo.
+
 ---
 
 ## Configuration
