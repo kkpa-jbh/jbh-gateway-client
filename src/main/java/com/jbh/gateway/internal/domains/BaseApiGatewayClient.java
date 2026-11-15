@@ -10,6 +10,7 @@ import com.jbh.gateway.internal.config.JbhHttpClientConfig;
 import com.jbh.gateway.internal.core.http.JbhHttpClientAdapter;
 import com.jbh.gateway.internal.core.http.adapter.CircuitBreakerHttpClientAdapter;
 import com.jbh.gateway.internal.core.http.adapter.NativeHttpClientAdapter;
+import com.jbh.gateway.internal.core.http.adapter.TracingHttpClientAdapter;
 import com.jbh.gateway.internal.core.http.model.JbhHttpHeaders;
 import com.jbh.gateway.internal.core.resilience.CircuitOpenException;
 import com.jbh.gateway.internal.core.resilience.JbhCircuitBreakerFactory;
@@ -77,13 +78,15 @@ public class BaseApiGatewayClient {
 
     JbhHttpClientAdapter transport =
         httpClientAdapter != null ? httpClientAdapter : new NativeHttpClientAdapter(httpClientConfig);
-    JbhHttpClientAdapter adapter =
+    JbhHttpClientAdapter breakerAdapter =
         new CircuitBreakerHttpClientAdapter(
             transport,
             JbhCircuitBreakerFactory.create(
                 circuitBreakerName(),
                 httpClientConfig.getCircuitBreakerConfig(),
                 gatewayConfig.getMeterRegistry()));
+    JbhHttpClientAdapter adapter =
+        new TracingHttpClientAdapter(breakerAdapter, gatewayConfig.getOpenTelemetry());
     this.jbhGatewayClient =
         new JbhGatewayInternalClientImpl(getGatewayHostUrl(), httpClientConfig, adapter);
   }
@@ -116,39 +119,87 @@ public class BaseApiGatewayClient {
     return path.startsWith("/") ? path : "/" + path;
   }
 
+  /** The template gets the same {@code /jbh-api} prefix as the path. {@code null} stays null. */
+  private String prefixedTemplate(String uriTemplate) {
+    return uriTemplate == null ? null : JBH_API_GATEWAY_PREFIX + normalizePath(uriTemplate);
+  }
+
   protected JbhHttpResponse executeGet(String path, JbhHttpHeaders clientHttpHeaders)
       throws JbhGatewayException {
+    return executeGet(path, null, clientHttpHeaders);
+  }
+
+  protected JbhHttpResponse executeGet(
+      String path, String uriTemplate, JbhHttpHeaders clientHttpHeaders)
+      throws JbhGatewayException {
     String fullPath = JBH_API_GATEWAY_PREFIX + normalizePath(path);
-    return callGateway("GET", fullPath, () -> jbhGatewayClient.get(fullPath, clientHttpHeaders));
+    String template = prefixedTemplate(uriTemplate);
+    return callGateway(
+        "GET", fullPath, () -> jbhGatewayClient.get(fullPath, template, clientHttpHeaders));
   }
 
   /** GET that also reads a JSON body of a 2xx response as {@code responseType}. */
   protected <T> JbhHttpResponse executeGet(
       String path, JbhHttpHeaders clientHttpHeaders, Class<T> responseType)
       throws JbhGatewayException {
+    return executeGet(path, null, clientHttpHeaders, responseType);
+  }
+
+  protected <T> JbhHttpResponse executeGet(
+      String path, String uriTemplate, JbhHttpHeaders clientHttpHeaders, Class<T> responseType)
+      throws JbhGatewayException {
     String fullPath = JBH_API_GATEWAY_PREFIX + normalizePath(path);
+    String template = prefixedTemplate(uriTemplate);
     return callGateway(
-        "GET", fullPath, () -> jbhGatewayClient.get(fullPath, clientHttpHeaders, responseType));
+        "GET",
+        fullPath,
+        () -> jbhGatewayClient.get(fullPath, template, clientHttpHeaders, responseType));
   }
 
   protected JbhHttpResponse executePost(String path, String jsonBody, JbhHttpHeaders clientHttpHeaders)
       throws JbhGatewayException {
+    return executePost(path, null, jsonBody, clientHttpHeaders);
+  }
+
+  protected JbhHttpResponse executePost(
+      String path, String uriTemplate, String jsonBody, JbhHttpHeaders clientHttpHeaders)
+      throws JbhGatewayException {
     String fullPath = JBH_API_GATEWAY_PREFIX + normalizePath(path);
+    String template = prefixedTemplate(uriTemplate);
     return callGateway(
-        "POST", fullPath, () -> jbhGatewayClient.post(fullPath, jsonBody, clientHttpHeaders));
+        "POST",
+        fullPath,
+        () -> jbhGatewayClient.post(fullPath, template, jsonBody, clientHttpHeaders));
   }
 
   protected JbhHttpResponse executePut(String path, String jsonBody, JbhHttpHeaders clientHttpHeaders)
       throws JbhGatewayException {
+    return executePut(path, null, jsonBody, clientHttpHeaders);
+  }
+
+  protected JbhHttpResponse executePut(
+      String path, String uriTemplate, String jsonBody, JbhHttpHeaders clientHttpHeaders)
+      throws JbhGatewayException {
     String fullPath = JBH_API_GATEWAY_PREFIX + normalizePath(path);
+    String template = prefixedTemplate(uriTemplate);
     return callGateway(
-        "PUT", fullPath, () -> jbhGatewayClient.put(fullPath, jsonBody, clientHttpHeaders));
+        "PUT",
+        fullPath,
+        () -> jbhGatewayClient.put(fullPath, template, jsonBody, clientHttpHeaders));
   }
 
   protected JbhHttpResponse executeDelete(String path, JbhHttpHeaders clientHttpHeaders)
       throws JbhGatewayException {
+    return executeDelete(path, null, clientHttpHeaders);
+  }
+
+  protected JbhHttpResponse executeDelete(
+      String path, String uriTemplate, JbhHttpHeaders clientHttpHeaders)
+      throws JbhGatewayException {
     String fullPath = JBH_API_GATEWAY_PREFIX + normalizePath(path);
-    return callGateway("DELETE", fullPath, () -> jbhGatewayClient.delete(fullPath, clientHttpHeaders));
+    String template = prefixedTemplate(uriTemplate);
+    return callGateway(
+        "DELETE", fullPath, () -> jbhGatewayClient.delete(fullPath, template, clientHttpHeaders));
   }
 
   /** One call to the gateway. It throws the network error of the adapter as it is. */

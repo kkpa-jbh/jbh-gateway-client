@@ -18,9 +18,23 @@
     <resilience4j.version>2.4.0</resilience4j.version>
     <!-- Lowest Micrometer of the callers (Spring Boot 3.5). The caller's BOM picks the real version. -->
     <micrometer.version>1.15.12</micrometer.version>
+    <!-- API only. The caller owns the SDK and the exporter. The caller's BOM picks the real version. -->
+    <opentelemetry.version>1.62.0</opentelemetry.version>
     <!-- mvn test skips the httpbin.org tests. Run them: mvn test -Dgroups=integration -DexcludedGroups= -->
     <excludedGroups>integration</excludedGroups>
   </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.opentelemetry</groupId>
+        <artifactId>opentelemetry-bom</artifactId>
+        <version>${opentelemetry.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <dependencies>
 
@@ -98,6 +112,12 @@
       <version>${micrometer.version}</version>
     </dependency>
 
+    <!-- Tracing: API only, no SDK -->
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-api</artifactId>
+    </dependency>
+
     <!-- Logging -->
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -166,6 +186,8 @@
             <ruleset>pmd-complexity.xml</ruleset>
           </rulesets>
           <printFailingErrors>true</printFailingErrors>
+          <!-- Fail on a PMD parse or rule error. The default (true) skips the file and passes. -->
+          <skipPmdError>false</skipPmdError>
           <linkXRef>false</linkXRef>
         </configuration>
       </plugin>

@@ -69,6 +69,11 @@ public final class JbhHttpHeaders {
     return builder().addAll(this).add(name, value).build();
   }
 
+  /** Copy where {@code name} has only {@code value}. Any value of that name is dropped (case-insensitive). */
+  public JbhHttpHeaders withReplaced(String name, String value) {
+    return builder().addAll(this).set(name, value).build();
+  }
+
   public JbhHttpHeaders withAll(Map<String, String> customHeaders) {
     if (customHeaders == null || customHeaders.isEmpty()) {
       return this;
@@ -93,8 +98,10 @@ public final class JbhHttpHeaders {
     return headers != null && !headers.isEmpty();
   }
 
+  /** Copy without {@code name}. Case-insensitive, like every HTTP header name. */
   public JbhHttpHeaders without(String name) {
-    Map<String, List<String>> newHeaders = new HashMap<>(headers);
+    Map<String, List<String>> newHeaders = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    newHeaders.putAll(headers);
     newHeaders.remove(name);
     return new JbhHttpHeaders(newHeaders);
   }

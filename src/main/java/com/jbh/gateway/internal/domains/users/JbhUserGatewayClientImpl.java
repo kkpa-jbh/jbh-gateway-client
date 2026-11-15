@@ -15,6 +15,9 @@ public class JbhUserGatewayClientImpl extends BaseApiGatewayClient implements Jb
 
   private static final String FIND_USER_ID_PATH = "/users/find-user-id";
   private static final String USER_GROUPS_PATH = "/user-groups/";
+  // Path templates for tracing: no ids, no query string.
+  private static final String FIND_USER_ID_TEMPLATE = "/users/find-user-id";
+  private static final String USER_GROUP_TEMPLATE = "/user-groups/{groupId}";
 
   public JbhUserGatewayClientImpl(final JbhGatewayClientBuilder hostConfig)
       throws JbhGatewayException {
@@ -34,7 +37,7 @@ public class JbhUserGatewayClientImpl extends BaseApiGatewayClient implements Jb
     JbhHttpHeaders clientJbhHttpHeaders = JbhHttpHeaders.fromMap(clientHttpHeaders);
     validator.validateAuthorizationHeader(clientJbhHttpHeaders);
 
-    return executeGet(FIND_USER_ID_PATH, clientJbhHttpHeaders, UUID.class);
+    return executeGet(FIND_USER_ID_PATH, FIND_USER_ID_TEMPLATE, clientJbhHttpHeaders, UUID.class);
   }
 
   @Override
@@ -44,6 +47,6 @@ public class JbhUserGatewayClientImpl extends BaseApiGatewayClient implements Jb
     JbhHttpHeaders clientJbhHttpHeaders = JbhHttpHeaders.fromMap(clientHttpHeaders);
     validator.validateAuthorizationHeader(clientJbhHttpHeaders);
 
-    return executeGet(USER_GROUPS_PATH + groupId, clientJbhHttpHeaders);
+    return executeGet(USER_GROUPS_PATH + groupId, USER_GROUP_TEMPLATE, clientJbhHttpHeaders);
   }
 }

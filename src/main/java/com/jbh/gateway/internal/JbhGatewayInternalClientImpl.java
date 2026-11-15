@@ -50,8 +50,15 @@ public class JbhGatewayInternalClientImpl {
 
   public JbhHttpResponse get(String path, JbhHttpHeaders headers)
       throws IOException, InterruptedException {
+    return get(path, null, headers);
+  }
+
+  /** GET with the path template that names the tracing span. {@code uriTemplate} may be null. */
+  public JbhHttpResponse get(String path, String uriTemplate, JbhHttpHeaders headers)
+      throws IOException, InterruptedException {
     JbhHttpRequest request =
         JbhHttpRequest.get(buildUrl(path))
+            .uriTemplate(uriTemplate)
             .headers(defaultJbhHttpHeaders.withAll(headers))
             .timeout(defaultTimeout)
             .build();
@@ -61,13 +68,27 @@ public class JbhGatewayInternalClientImpl {
   /** GET that also reads a JSON body of a 2xx response as {@code responseType}. */
   public <T> JbhHttpResponse get(String path, JbhHttpHeaders headers, Class<T> responseType)
       throws IOException, InterruptedException {
-    return withTypedBody(get(path, headers), responseType);
+    return get(path, null, headers, responseType);
+  }
+
+  /** Typed GET with the path template. {@code uriTemplate} may be null. */
+  public <T> JbhHttpResponse get(
+      String path, String uriTemplate, JbhHttpHeaders headers, Class<T> responseType)
+      throws IOException, InterruptedException {
+    return withTypedBody(get(path, uriTemplate, headers), responseType);
   }
 
   public JbhHttpResponse post(String path, String jsonBody, JbhHttpHeaders headers)
       throws IOException, InterruptedException {
+    return post(path, null, jsonBody, headers);
+  }
+
+  public JbhHttpResponse post(
+      String path, String uriTemplate, String jsonBody, JbhHttpHeaders headers)
+      throws IOException, InterruptedException {
     JbhHttpRequest request =
         JbhHttpRequest.post(buildUrl(path))
+            .uriTemplate(uriTemplate)
             .jsonBody(jsonBody)
             .headers(headers)
             .timeout(defaultTimeout)
@@ -77,8 +98,14 @@ public class JbhGatewayInternalClientImpl {
 
   public JbhHttpResponse put(String path, String jsonBody, JbhHttpHeaders headers)
       throws IOException, InterruptedException {
+    return put(path, null, jsonBody, headers);
+  }
+
+  public JbhHttpResponse put(String path, String uriTemplate, String jsonBody, JbhHttpHeaders headers)
+      throws IOException, InterruptedException {
     JbhHttpRequest request =
         JbhHttpRequest.put(buildUrl(path))
+            .uriTemplate(uriTemplate)
             .jsonBody(jsonBody)
             .headers(headers)
             .timeout(defaultTimeout)
@@ -88,8 +115,17 @@ public class JbhGatewayInternalClientImpl {
 
   public JbhHttpResponse delete(String path, JbhHttpHeaders headers)
       throws IOException, InterruptedException {
+    return delete(path, null, headers);
+  }
+
+  public JbhHttpResponse delete(String path, String uriTemplate, JbhHttpHeaders headers)
+      throws IOException, InterruptedException {
     JbhHttpRequest request =
-        JbhHttpRequest.delete(buildUrl(path)).headers(headers).timeout(defaultTimeout).build();
+        JbhHttpRequest.delete(buildUrl(path))
+            .uriTemplate(uriTemplate)
+            .headers(headers)
+            .timeout(defaultTimeout)
+            .build();
     return jbhHttpClientAdapter.execute(request);
   }
 
