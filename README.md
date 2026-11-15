@@ -61,7 +61,7 @@ src/main/java/com/jbh/gateway/
             ├── JbhHttpClientAdapter.java      # Transport seam: execute(request). Tests swap it.
             └── adapter/
                 ├── NativeHttpClientAdapter.java   # java.net.http + retries
-                └── TracingHttpClientAdapter.java  # One CLIENT span per call + traceparent (added in wave 2)
+                └── TracingHttpClientAdapter.java  # One CLIENT span per call + traceparent
 
 src/test/java/com/jbh/gateway/
 ├── client/                          # CLIENT TESTS (simulates library callers)
@@ -184,8 +184,9 @@ The base class provides these protected methods:
 | Method | Description |
 |--------|-------------|
 | `executeGet(path, uriTemplate, headers)` | GET request to `/jbh-api{path}`. The template names the span. Use these overloads. |
+| `executeGet(path, uriTemplate, headers, type)` | GET request; a 2xx JSON body is also read as `type` (`getBodyAs(type)`) |
 | `executeGet(path, headers)` | GET request to `/jbh-api{path}`, no template |
-| `executeGet(path, headers, type)` | GET request; a 2xx JSON body is also read as `type` (`getBodyAs(type)`) |
+| `executeGet(path, headers, type)` | Typed GET, no template |
 | `executePost(path, uriTemplate, body, headers)` | POST request with JSON body |
 | `executePut(path, uriTemplate, body, headers)` | PUT request with JSON body |
 | `executeDelete(path, uriTemplate, headers)` | DELETE request |
