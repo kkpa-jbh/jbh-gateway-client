@@ -2,6 +2,7 @@ package com.jbh.gateway.internal.core.http.adapter;
 
 import com.jbh.gateway.client.JbhHttpResponse;
 import com.jbh.gateway.internal.core.http.JbhHttpClientAdapter;
+import com.jbh.gateway.internal.core.http.model.JbhHttpHeaders;
 import com.jbh.gateway.internal.core.http.model.JbhHttpRequest;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
@@ -11,6 +12,7 @@ import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.context.propagation.TextMapPropagator;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -79,17 +81,24 @@ public class TracingHttpClientAdapter implements JbhHttpClientAdapter {
     return span;
   }
 
-  /** Returns the same request when the propagator adds nothing (the no-op instance). */
+  /**
+   * Returns the same request when the propagator adds nothing (the no-op instance). Otherwise it
+   * first drops every header this propagator owns. The W3C propagator writes no {@code tracestate}
+   * when it is empty, so a caller's old {@code tracestate} would stay next to the new {@code
+   * traceparent}.
+   */
   private JbhHttpRequest injectContext(JbhHttpRequest request, Span span) {
+    TextMapPropagator propagator = openTelemetry.getPropagators().getTextMapPropagator();
     Map<String, String> carrier = new HashMap<>();
-    openTelemetry
-        .getPropagators()
-        .getTextMapPropagator()
-        .inject(Context.current().with(span), carrier, (map, key, value) -> map.put(key, value));
+    propagator.inject(
+        Context.current().with(span), carrier, (map, key, value) -> map.put(key, value));
     if (carrier.isEmpty()) {
       return request;
     }
-    var headers = request.getHeaders();
+    JbhHttpHeaders headers = request.getHeaders();
+    for (String field : propagator.fields()) {
+      headers = headers.without(field);
+    }
     for (Map.Entry<String, String> entry : carrier.entrySet()) {
       headers = headers.withReplaced(entry.getKey(), entry.getValue());
     }

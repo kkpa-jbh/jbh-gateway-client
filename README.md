@@ -301,6 +301,11 @@ The client makes one `CLIENT` span for each call, with all retries inside it. It
   Behavior is the same as before.
 - **The caller owns the SDK and the exporter.** This library has only the OpenTelemetry API.
 - **`GlobalOpenTelemetry` is not read.** Pass the instance to the builder.
+- **The instance needs the W3C propagator.** Quarkus and Spring Boot set it by default. An SDK you
+  build by hand has none unless you set it. Then the client makes spans but sends no `traceparent`
+  (example below).
+- A `traceparent` or `tracestate` the caller puts in `headers` is dropped. Only the new span's
+  values go out.
 - The span name is `<METHOD> <url.template>`, for example `GET /jbh-api/user-groups/{groupId}`.
   No id, query string, header or body goes into the span.
 - **Status:** `5xx` and exceptions (`CONNECTION_FAILED`, `TIMEOUT`, `CIRCUIT_OPEN`, ...) set `ERROR`.
@@ -332,6 +337,15 @@ JbhUserGatewayClient userClient(io.opentelemetry.api.OpenTelemetry openTelemetry
         .openTelemetry(openTelemetry)
         .build().getUserClient();
 }
+```
+
+An SDK built by hand (no Quarkus or Spring Boot setup) must set the W3C propagator itself:
+
+```java
+OpenTelemetry openTelemetry = OpenTelemetrySdk.builder()
+    .setTracerProvider(tracerProvider)
+    .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
+    .build();
 ```
 
 ### Example: one request across services

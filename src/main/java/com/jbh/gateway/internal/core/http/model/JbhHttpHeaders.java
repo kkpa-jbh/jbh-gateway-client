@@ -98,8 +98,10 @@ public final class JbhHttpHeaders {
     return headers != null && !headers.isEmpty();
   }
 
+  /** Copy without {@code name}. Case-insensitive, like every HTTP header name. */
   public JbhHttpHeaders without(String name) {
-    Map<String, List<String>> newHeaders = new HashMap<>(headers);
+    Map<String, List<String>> newHeaders = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    newHeaders.putAll(headers);
     newHeaders.remove(name);
     return new JbhHttpHeaders(newHeaders);
   }
