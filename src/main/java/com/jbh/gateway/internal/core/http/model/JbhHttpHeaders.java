@@ -69,6 +69,11 @@ public final class JbhHttpHeaders {
     return builder().addAll(this).add(name, value).build();
   }
 
+  /** Copy where {@code name} has only {@code value}. Any value of that name is dropped (case-insensitive). */
+  public JbhHttpHeaders withReplaced(String name, String value) {
+    return builder().addAll(this).set(name, value).build();
+  }
+
   public JbhHttpHeaders withAll(Map<String, String> customHeaders) {
     if (customHeaders == null || customHeaders.isEmpty()) {
       return this;

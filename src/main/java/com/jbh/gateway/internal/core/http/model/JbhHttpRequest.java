@@ -17,13 +17,20 @@ public final class JbhHttpRequest {
     private final JbhHttpHeaders headers;
     private final Optional<String> body;
     private final Duration timeout;
+    private final String uriTemplate;
 
-    private JbhHttpRequest(JbhHttpMethod method, URI uri, JbhHttpHeaders headers, Optional<String> body, Duration timeout) {
+    private JbhHttpRequest(JbhHttpMethod method, URI uri, JbhHttpHeaders headers, Optional<String> body, Duration timeout, String uriTemplate) {
         this.method = method;
         this.uri = uri;
         this.headers = headers;
         this.body = body;
         this.timeout = timeout;
+        this.uriTemplate = uriTemplate;
+    }
+
+    /** Copy of this request with other headers. All other fields stay. */
+    public JbhHttpRequest withHeaders(JbhHttpHeaders newHeaders) {
+        return new JbhHttpRequest(method, uri, newHeaders, body, timeout, uriTemplate);
     }
 
     public static Builder builder() {
@@ -82,6 +89,11 @@ public final class JbhHttpRequest {
         return timeout;
     }
 
+    /** Path template without query, for example {@code /jbh-api/user-groups/{groupId}}, or {@code null}. */
+    public String getUriTemplate() {
+        return uriTemplate;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -91,12 +103,13 @@ public final class JbhHttpRequest {
                 Objects.equals(uri, that.uri) &&
                 Objects.equals(headers, that.headers) &&
                 Objects.equals(body, that.body) &&
-                Objects.equals(timeout, that.timeout);
+                Objects.equals(timeout, that.timeout) &&
+                Objects.equals(uriTemplate, that.uriTemplate);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(method, uri, headers, body, timeout);
+        return Objects.hash(method, uri, headers, body, timeout, uriTemplate);
     }
 
     @Override
@@ -107,6 +120,7 @@ public final class JbhHttpRequest {
                 ", headerNames=" + headers.getNames() +
                 ", body=" + body.map(b -> b.length() > 100 ? b.substring(0, 100) + "..." : b) +
                 ", timeout=" + timeout +
+                ", uriTemplate=" + uriTemplate +
                 '}';
     }
 
@@ -116,6 +130,12 @@ public final class JbhHttpRequest {
         private JbhHttpHeaders.Builder headersBuilder = JbhHttpHeaders.builder();
         private String body;
         private Duration timeout = Duration.ofSeconds(30); // Default 30 second timeout
+        private String uriTemplate;
+
+        public Builder uriTemplate(String uriTemplate) {
+            this.uriTemplate = uriTemplate;
+            return this;
+        }
 
         public Builder method(JbhHttpMethod method) {
             this.method = method;
@@ -168,7 +188,8 @@ public final class JbhHttpRequest {
                     uri,
                     headersBuilder.build(),
                     Optional.ofNullable(body),
-                    timeout
+                    timeout,
+                    uriTemplate
             );
         }
     }

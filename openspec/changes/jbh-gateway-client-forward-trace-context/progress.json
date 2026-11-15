@@ -1,0 +1,343 @@
+{
+  "schema_version": 1,
+  "kind": "change",
+  "change": "jbh-gateway-client-forward-trace-context",
+  "module": "jbh-gateway-client",
+  "roadmap": null,
+  "request": "JBH-55 section 2 (ticket JBH-57): forward the W3C trace context from jbh-gateway-client, one CLIENT span per call. Plan: /Users/cristianpena/cpena/sw/github/kkpa-jbh/kkpa/tickets/JBH-55/JBH-55.md section 2. Unit tests: excluded. Do not move Linear tickets (the jbh-leader session does it).",
+  "status": "in-progress",
+  "rollup": {
+    "current": [
+      "3.1",
+      "4.1",
+      "4.2",
+      "4.3"
+    ],
+    "pending": [
+      "5.1",
+      "5.2"
+    ],
+    "blocked": [],
+    "done": [
+      "2.1",
+      "2.2",
+      "2.3",
+      "2.4"
+    ]
+  },
+  "created_at": "2026-11-15T16:08:37Z",
+  "updated_at": "2026-11-15T16:10:40Z",
+  "leader": {
+    "assistant": "Claude Code",
+    "model": "claude-opus-5-5"
+  },
+  "git": {
+    "strategy": "auto",
+    "branch": "ft/CH2-JBH-57-jbh-gateway-client-forward-trace-context",
+    "base": "main",
+    "ticket": "JBH-57",
+    "ticket_url": "https://linear.app/kkpa/issue/JBH-57/jbh-gateway-client-forward-the-trace-context-on-outgoing-http-calls",
+    "ticket_tracker": "linear",
+    "created_at": "2026-11-15T15:46:00Z"
+  },
+  "test_first": {
+    "status": "skipped",
+    "commit": null,
+    "tests": [],
+    "approved_at": null
+  },
+  "tasks": [
+    {
+      "id": "2.1",
+      "title": "pom.xml OpenTelemetry BOM + opentelemetry-api; module-info requires",
+      "module": "jbh-gateway-client",
+      "depends_on": [],
+      "parallel_ok": true,
+      "status": "done",
+      "agent": "jbh-gateway-client",
+      "model": "claude-sonnet-5-5",
+      "started_at": "2026-11-15T16:08:37Z",
+      "completed_at": "2026-11-15T16:10:09Z",
+      "duration_seconds": 92,
+      "notes": "OpenTelemetry BOM 1.62.0 imported in new dependencyManagement; opentelemetry-api added; module-info requires transitive api + context.",
+      "budget": {
+        "five_hour_pct_start": 63.0,
+        "five_hour_pct_end": 70.0,
+        "five_hour_pct_delta": 7.0,
+        "cost_usd_delta": 0.6,
+        "context_pct_end": 19,
+        "source": "statusline-cache",
+        "approx": true,
+        "note": "wave delta covers 2.1-2.4 jointly"
+      }
+    },
+    {
+      "id": "2.2",
+      "title": "JbhHttpHeaders.withReplaced; JbhHttpRequest uriTemplate + withHeaders",
+      "module": "jbh-gateway-client",
+      "depends_on": [],
+      "parallel_ok": true,
+      "status": "done",
+      "agent": "jbh-gateway-client",
+      "model": "claude-sonnet-5-5",
+      "started_at": "2026-11-15T16:08:37Z",
+      "completed_at": "2026-11-15T16:10:09Z",
+      "duration_seconds": 92,
+      "notes": "JbhHttpHeaders.withReplaced; JbhHttpRequest uriTemplate, getter, builder method, withHeaders; equals/hashCode/toString include it.",
+      "budget": {
+        "five_hour_pct_start": 63.0,
+        "five_hour_pct_end": 70.0,
+        "five_hour_pct_delta": 7.0,
+        "cost_usd_delta": 0.6,
+        "context_pct_end": 19,
+        "source": "statusline-cache",
+        "approx": true,
+        "note": "wave delta covers 2.1-2.4 jointly"
+      }
+    },
+    {
+      "id": "2.3",
+      "title": "JbhGatewayClientBuilder openTelemetry(...) + getter, noop default",
+      "module": "jbh-gateway-client",
+      "depends_on": [],
+      "parallel_ok": true,
+      "status": "done",
+      "agent": "jbh-gateway-client",
+      "model": "claude-sonnet-5-5",
+      "started_at": "2026-11-15T16:08:37Z",
+      "completed_at": "2026-11-15T16:10:09Z",
+      "duration_seconds": 92,
+      "notes": "Builder openTelemetry(...) and getOpenTelemetry(); default and null give OpenTelemetry.noop().",
+      "budget": {
+        "five_hour_pct_start": 63.0,
+        "five_hour_pct_end": 70.0,
+        "five_hour_pct_delta": 7.0,
+        "cost_usd_delta": 0.6,
+        "context_pct_end": 19,
+        "source": "statusline-cache",
+        "approx": true,
+        "note": "wave delta covers 2.1-2.4 jointly"
+      }
+    },
+    {
+      "id": "2.4",
+      "title": "README Tracing section and CLAUDE.md lines",
+      "module": "jbh-gateway-client",
+      "depends_on": [],
+      "parallel_ok": true,
+      "status": "done",
+      "agent": "jbh-gateway-client",
+      "model": "claude-sonnet-5-5",
+      "started_at": "2026-11-15T16:08:37Z",
+      "completed_at": "2026-11-15T16:10:09Z",
+      "duration_seconds": 92,
+      "notes": "README Tracing section (Quarkus + Spring Boot snippets), builder options, tree, add-method rule; CLAUDE.md two lines.",
+      "budget": {
+        "five_hour_pct_start": 63.0,
+        "five_hour_pct_end": 70.0,
+        "five_hour_pct_delta": 7.0,
+        "cost_usd_delta": 0.6,
+        "context_pct_end": 19,
+        "source": "statusline-cache",
+        "approx": true,
+        "note": "wave delta covers 2.1-2.4 jointly"
+      }
+    },
+    {
+      "id": "3.1",
+      "title": "New TracingHttpClientAdapter",
+      "module": "jbh-gateway-client",
+      "depends_on": [
+        "2.1",
+        "2.2"
+      ],
+      "parallel_ok": false,
+      "status": "in-progress",
+      "agent": "jbh-gateway-client",
+      "model": "claude-sonnet-5-5",
+      "started_at": "2026-11-15T16:10:40Z",
+      "completed_at": null,
+      "duration_seconds": null,
+      "notes": null,
+      "budget": null
+    },
+    {
+      "id": "4.1",
+      "title": "JbhGatewayInternalClientImpl overloads with uriTemplate",
+      "module": "jbh-gateway-client",
+      "depends_on": [
+        "2.2"
+      ],
+      "parallel_ok": false,
+      "status": "in-progress",
+      "agent": "jbh-gateway-client",
+      "model": "claude-sonnet-5-5",
+      "started_at": "2026-11-15T16:10:40Z",
+      "completed_at": null,
+      "duration_seconds": null,
+      "notes": null,
+      "budget": null
+    },
+    {
+      "id": "4.2",
+      "title": "BaseApiGatewayClient template overloads and tracing chain",
+      "module": "jbh-gateway-client",
+      "depends_on": [
+        "2.3",
+        "3.1",
+        "4.1"
+      ],
+      "parallel_ok": false,
+      "status": "in-progress",
+      "agent": "jbh-gateway-client",
+      "model": "claude-sonnet-5-5",
+      "started_at": "2026-11-15T16:10:40Z",
+      "completed_at": null,
+      "duration_seconds": null,
+      "notes": null,
+      "budget": null
+    },
+    {
+      "id": "4.3",
+      "title": "Domain clients declare their templates",
+      "module": "jbh-gateway-client",
+      "depends_on": [
+        "4.2"
+      ],
+      "parallel_ok": false,
+      "status": "in-progress",
+      "agent": "jbh-gateway-client",
+      "model": "claude-sonnet-5-5",
+      "started_at": "2026-11-15T16:10:40Z",
+      "completed_at": null,
+      "duration_seconds": null,
+      "notes": null,
+      "budget": null
+    },
+    {
+      "id": "5.1",
+      "title": "mvn test and mvn -q pmd:check",
+      "module": "jbh-gateway-client",
+      "depends_on": [
+        "2.4",
+        "4.1",
+        "4.2",
+        "4.3"
+      ],
+      "parallel_ok": false,
+      "status": "pending",
+      "agent": null,
+      "model": null,
+      "started_at": null,
+      "completed_at": null,
+      "duration_seconds": null,
+      "notes": null,
+      "budget": null
+    },
+    {
+      "id": "5.2",
+      "title": "Static checks (greps, Native unchanged, system map unchanged)",
+      "module": "jbh-gateway-client",
+      "depends_on": [
+        "2.4",
+        "4.1",
+        "4.2",
+        "4.3"
+      ],
+      "parallel_ok": false,
+      "status": "pending",
+      "agent": null,
+      "model": null,
+      "started_at": null,
+      "completed_at": null,
+      "duration_seconds": null,
+      "notes": null,
+      "budget": null
+    }
+  ],
+  "review": {
+    "status": "pending",
+    "agent": null,
+    "brief": null,
+    "rounds": []
+  },
+  "decisions": [
+    {
+      "id": "D1",
+      "at": "2026-11-15T15:55:00Z",
+      "scope": "change",
+      "made_by": "user",
+      "decision": "Span placement outermost; explicit url.template from domain clients; SOLID SRP+OCP+DIP; SRP lines as listed",
+      "why": "Step 2 interview answers (AskUserQuestion)",
+      "covered_by": null
+    },
+    {
+      "id": "D2",
+      "at": "2026-11-15T15:50:00Z",
+      "scope": "change",
+      "made_by": "leader",
+      "decision": "Version stays 1.0.0-SNAPSHOT",
+      "why": "Repo has no version rule; all consumers use the SNAPSHOT with -U; the change is additive. Alternative rejected: bump to 1.1.0, which forces sections 4/5 to edit versions.",
+      "covered_by": "design.md D12"
+    },
+    {
+      "id": "D3",
+      "at": "2026-11-15T16:08:00Z",
+      "scope": "change",
+      "made_by": "user",
+      "decision": "Design briefing approved, incl. 4xx not an error and JbhHttpHeaders.withReplaced",
+      "why": "User answered 'yes go ahead' to the Step 3a briefing",
+      "covered_by": null
+    },
+    {
+      "id": "D4",
+      "at": "2026-11-15T16:08:00Z",
+      "scope": "concurrency",
+      "made_by": "leader",
+      "decision": "No race or synchronization risk in any task",
+      "why": "Decorator holds only final thread-safe fields; per-call state is local; no async, no shared cache, no check-then-act.",
+      "covered_by": null
+    },
+    {
+      "id": "D5",
+      "at": "2026-11-15T16:08:37Z",
+      "scope": "change",
+      "made_by": "leader",
+      "decision": "Two waves: wave 1 = 2.1-2.4; wave 2 = 3.1, 4.1, 4.2, 4.3 in one serial worker, in dependency order",
+      "why": "Small change (~330 lines); one serial worker per dependent chain avoids three extra doc pack reads. Alternative rejected: four waves of one task each.",
+      "covered_by": null
+    }
+  ],
+  "events": [
+    {
+      "at": "2026-11-15T15:46:00Z",
+      "agent": "leader",
+      "event": "branch created from main e95aee8; old pom.xml work committed alone as 603750a"
+    },
+    {
+      "at": "2026-11-15T16:08:37Z",
+      "agent": "leader",
+      "event": "artifacts committed 9c5f337 (openspec validate --strict passed)"
+    },
+    {
+      "at": "2026-11-15T16:08:37Z",
+      "agent": "leader",
+      "event": "test_first skipped: no unit tests in this change (plan header: excluded)"
+    },
+    {
+      "at": "2026-11-15T16:08:37Z",
+      "agent": "leader",
+      "event": "dispatched worker for wave 1 (tasks 2.1, 2.2, 2.3, 2.4) on sonnet; budget start five_hour 63%, cost 2.71 USD"
+    },
+    {
+      "at": "2026-11-15T16:10:09Z",
+      "agent": "leader",
+      "event": "wave 1 verified by the leader (assistantRunsTests): mvn -q test exit 0; mvn -q pmd:check exit 0. Worker timestamps were not clock-read; leader bracket times used."
+    },
+    {
+      "at": "2026-11-15T16:10:40Z",
+      "agent": "leader",
+      "event": "dispatched worker for wave 2 (tasks 3.1, 4.1, 4.2, 4.3, serial) on sonnet; budget start five_hour 70%, cost 3.31 USD"
+    }
+  ]
+}

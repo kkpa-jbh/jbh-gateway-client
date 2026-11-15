@@ -47,6 +47,7 @@ com.jbh.gateway.internal/        # PRIVATE - not exported, implementation only
 - **All paths auto-prefixed with `/jbh-api`** in `BaseApiGatewayClient`
 - **Headers accepted as `Map<String, String>`** in public API, converted to `JbhHttpHeaders` internally
 - **Adapter pattern** for HTTP clients (currently `NativeHttpClientAdapter` using java.net.http)
+- **Tracing decorator**: `TracingHttpClientAdapter` wraps the circuit breaker (outermost). One CLIENT span per call, `traceparent` injected. Domain clients pass a path template to `executeGet/Post/Put/Delete`. Rules: README "Tracing"
 - **Configuration Injection** via `JbhGatewayClientBuilder`
 
 ## Adding a New Domain Client
@@ -73,6 +74,7 @@ All client methods must:
 - **java.net.http**: Native HTTP client (no external HTTP libs in main scope)
 - **Resilience4j** (`circuitbreaker`, `micrometer`): one circuit breaker per domain client, wired in `BaseApiGatewayClient`. All Resilience4j code stays in `internal/core/resilience/JbhCircuitBreakerFactory` and `CircuitBreakerHttpClientAdapter`. Rules: README "Circuit breaker"
 - **Micrometer** (`micrometer-core`): optional `MeterRegistry` on the builder for breaker metrics. The caller's BOM picks the version
+- **OpenTelemetry API** (`opentelemetry-api` only): optional `OpenTelemetry` on the builder, default no-op. The caller owns the SDK and exporter. `GlobalOpenTelemetry` is never read
 - **OkHttp MockWebServer**: Test dependency only
 
 ## System map sync (`../jbh-deploy/README.md`)

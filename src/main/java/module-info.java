@@ -24,6 +24,9 @@ module com.jbh.gateway {
     requires io.github.resilience4j.micrometer;
     // MeterRegistry is part of the public builder API.
     requires transitive micrometer.core;
+    // OpenTelemetry is part of the public builder API.
+    requires transitive io.opentelemetry.api;
+    requires io.opentelemetry.context;
     requires transitive jbh.notification.contracts;
 
   // Public API exports - what microservices can use

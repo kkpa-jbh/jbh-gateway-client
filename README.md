@@ -60,7 +60,8 @@ src/main/java/com/jbh/gateway/
         └── http/
             ├── JbhHttpClientAdapter.java      # Transport seam: execute(request). Tests swap it.
             └── adapter/
-                └── NativeHttpClientAdapter.java   # java.net.http + retries
+                ├── NativeHttpClientAdapter.java   # java.net.http + retries
+                └── TracingHttpClientAdapter.java  # One CLIENT span per call + traceparent (added in wave 2)
 
 src/test/java/com/jbh/gateway/
 ├── client/                          # CLIENT TESTS (simulates library callers)
@@ -111,6 +112,8 @@ public class JbhXxxGatewayClientImpl extends BaseApiGatewayClient
     implements JbhXxxGatewayClient {
 
     private static final String MY_PATH = "/xxx/my-endpoint";
+    // Path template for tracing: no ids, no query string.
+    private static final String MY_TEMPLATE = "/xxx/my-endpoint";
 
     public JbhXxxGatewayClientImpl(JbhGatewayClientBuilder config)
         throws JbhGatewayException {
@@ -122,7 +125,7 @@ public class JbhXxxGatewayClientImpl extends BaseApiGatewayClient
         throws JbhGatewayException {
         JbhHttpHeaders headers = JbhHttpHeaders.fromMap(clientHttpHeaders);
         validator.validateAuthorizationHeader(headers);
-        return executeGet(MY_PATH, headers);
+        return executeGet(MY_PATH, MY_TEMPLATE, headers);
     }
 
     @Override
@@ -131,10 +134,14 @@ public class JbhXxxGatewayClientImpl extends BaseApiGatewayClient
         JbhHttpHeaders headers = JbhHttpHeaders.fromMap(clientHttpHeaders);
         validator.validateAuthorizationHeader(headers);
         String jsonBody = JacksonJsonUtil.toJson(request);
-        return executePost(MY_PATH, jsonBody, headers);
+        return executePost(MY_PATH, MY_TEMPLATE, jsonBody, headers);
     }
 }
 ```
+
+Always pass the path template (the second argument). The span name and `url.template` come from it.
+Put the variable part in braces, for example `/xxx/{id}`, and never add a query string. The old
+overloads without a template still work, but their span name has only the HTTP method.
 
 #### 3. Add Factory Method to Builder
 
@@ -176,11 +183,14 @@ The base class provides these protected methods:
 
 | Method | Description |
 |--------|-------------|
-| `executeGet(path, headers)` | GET request to `/jbh-api{path}` |
+| `executeGet(path, uriTemplate, headers)` | GET request to `/jbh-api{path}`. The template names the span. Use these overloads. |
+| `executeGet(path, headers)` | GET request to `/jbh-api{path}`, no template |
 | `executeGet(path, headers, type)` | GET request; a 2xx JSON body is also read as `type` (`getBodyAs(type)`) |
-| `executePost(path, body, headers)` | POST request with JSON body |
-| `executePut(path, body, headers)` | PUT request with JSON body |
-| `executeDelete(path, headers)` | DELETE request |
+| `executePost(path, uriTemplate, body, headers)` | POST request with JSON body |
+| `executePut(path, uriTemplate, body, headers)` | PUT request with JSON body |
+| `executeDelete(path, uriTemplate, headers)` | DELETE request |
+
+Each of `executePost`, `executePut` and `executeDelete` also has an older overload without `uriTemplate`.
 
 All paths are automatically prefixed with `/jbh-api`.
 All methods throw `JbhGatewayException` when the call gets no HTTP response (see "Exception Handling").
@@ -281,6 +291,50 @@ Without a `MeterRegistry` the breaker still works. It only publishes no metrics.
 
 ---
 
+## Tracing
+
+The client makes one `CLIENT` span for each call, with all retries inside it. It adds the
+`traceparent` (and `tracestate`) header to the request, so the gateway joins the same trace.
+
+- **Default: no-op.** Without `.openTelemetry(...)` there are no spans and no trace headers.
+  Behavior is the same as before.
+- **The caller owns the SDK and the exporter.** This library has only the OpenTelemetry API.
+- **`GlobalOpenTelemetry` is not read.** Pass the instance to the builder.
+- The span name is `<METHOD> <url.template>`, for example `GET /jbh-api/user-groups/{groupId}`.
+  No id, query string, header or body goes into the span.
+- **Status:** `5xx` and exceptions (`CONNECTION_FAILED`, `TIMEOUT`, `CIRCUIT_OPEN`, ...) set `ERROR`.
+  `4xx` is not an error (`403` and `404` are normal for `findUserGroup`).
+- Create the clients once and reuse them (also needed for the circuit breaker).
+
+Quarkus (`quarkus-opentelemetry` gives the CDI bean):
+
+```java
+@ApplicationScoped
+class GatewayClientConfig {
+    @Produces @ApplicationScoped
+    JbhUserGatewayClient userClient(io.opentelemetry.api.OpenTelemetry openTelemetry) throws JbhGatewayException {
+        return JbhGatewayClientBuilder.builder()
+            .baseUrl(baseUrl).sourceService("my-service")
+            .openTelemetry(openTelemetry)
+            .build().getUserClient();
+    }
+}
+```
+
+Spring Boot (the `OpenTelemetry` bean comes from the OpenTelemetry starter or the Micrometer bridge):
+
+```java
+@Bean
+JbhUserGatewayClient userClient(io.opentelemetry.api.OpenTelemetry openTelemetry) throws JbhGatewayException {
+    return JbhGatewayClientBuilder.builder()
+        .baseUrl(baseUrl).sourceService("my-service")
+        .openTelemetry(openTelemetry)
+        .build().getUserClient();
+}
+```
+
+---
+
 ## Configuration
 
 ```java
@@ -290,6 +344,7 @@ var builder = JbhGatewayClientBuilder.builder()
     .connectTimeout(Duration.ofSeconds(5))    // Default: 10s
     .requestTimeout(Duration.ofSeconds(15))   // Default: 30s
     .meterRegistry(meterRegistry)             // Optional: circuit breaker metrics
+    .openTelemetry(openTelemetry)             // Optional: tracing. Default: no-op
     .build();
 ```
 

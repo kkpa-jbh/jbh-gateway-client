@@ -5,6 +5,7 @@ import com.jbh.gateway.client.users.JbhUserGatewayClient;
 import com.jbh.gateway.internal.domains.notifications.JbhNotificationGatewayClientImpl;
 import com.jbh.gateway.internal.domains.users.JbhUserGatewayClientImpl;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.opentelemetry.api.OpenTelemetry;
 import java.time.Duration;
 
 public class JbhGatewayClientBuilder {
@@ -13,6 +14,7 @@ public class JbhGatewayClientBuilder {
   private final Duration connectTimeout;
   private final Duration requestTimeout;
   private final MeterRegistry meterRegistry;
+  private final OpenTelemetry openTelemetry;
 
   private JbhGatewayClientBuilder(final Builder builder) {
     this.baseUrl = builder.baseUrl;
@@ -20,6 +22,7 @@ public class JbhGatewayClientBuilder {
     this.connectTimeout = builder.connectTimeout;
     this.requestTimeout = builder.requestTimeout;
     this.meterRegistry = builder.meterRegistry;
+    this.openTelemetry = builder.openTelemetry;
   }
 
   public String getBaseUrl() {
@@ -43,6 +46,11 @@ public class JbhGatewayClientBuilder {
     return meterRegistry;
   }
 
+  /** The instance used for tracing. Never {@code null}: the default is {@code OpenTelemetry.noop()}. */
+  public OpenTelemetry getOpenTelemetry() {
+    return openTelemetry;
+  }
+
   public JbhUserGatewayClient getUserClient() throws JbhGatewayException {
     return new JbhUserGatewayClientImpl(this);
   }
@@ -61,6 +69,7 @@ public class JbhGatewayClientBuilder {
     private Duration connectTimeout = Duration.ofSeconds(10);
     private Duration requestTimeout = Duration.ofSeconds(30);
     private MeterRegistry meterRegistry;
+    private OpenTelemetry openTelemetry = OpenTelemetry.noop();
 
     public Builder baseUrl(String baseUrl) {
       this.baseUrl = baseUrl;
@@ -88,6 +97,15 @@ public class JbhGatewayClientBuilder {
      */
     public Builder meterRegistry(MeterRegistry meterRegistry) {
       this.meterRegistry = meterRegistry;
+      return this;
+    }
+
+    /**
+     * Instance used to trace every call. Optional: the default (and {@code null}) is no-op, so no
+     * span and no trace header. The caller owns the SDK. {@code GlobalOpenTelemetry} is never read.
+     */
+    public Builder openTelemetry(OpenTelemetry openTelemetry) {
+      this.openTelemetry = openTelemetry == null ? OpenTelemetry.noop() : openTelemetry;
       return this;
     }
 
