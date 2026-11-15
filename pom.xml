@@ -166,6 +166,8 @@
             <ruleset>pmd-complexity.xml</ruleset>
           </rulesets>
           <printFailingErrors>true</printFailingErrors>
+          <!-- Fail on a PMD parse or rule error. The default (true) skips the file and passes. -->
+          <skipPmdError>false</skipPmdError>
           <linkXRef>false</linkXRef>
         </configuration>
       </plugin>
